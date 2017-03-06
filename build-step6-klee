@@ -2,14 +2,14 @@ git clone --depth 1 --branch v1.3.0 https://github.com/klee/klee.git
 rm -rf klee/.git
 
 cd klee
-CC="gcc-4.9" CXX="g++-4.9" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" ./configure \
-LDFLAGS="-L/home/oren/SoftwarePackages/MyKlee/minisat/build/release/lib/"  \
---with-llvm=/home/oren/SoftwarePackages/MyKlee/llvm/                       \
---with-llvmcc=/home/oren/SoftwarePackages/MyKlee/llvm/Release/bin/clang    \
---with-llvmcxx=/home/oren/SoftwarePackages/MyKlee/llvm/Release/bin/clang++ \
---with-stp=/home/oren/SoftwarePackages/MyKlee/stp/build/                   \
---with-uclibc=/home/oren/SoftwarePackages/MyKlee/klee-uclibc               \
---with-z3=/home/oren/SoftwarePackages/MyKlee/z3/build/                     \
+./configure \
+LDFLAGS="-L/home/oren/GIT/MyKlee/minisat/build/release/lib/"  \
+--with-llvm=/home/oren/GIT/MyKlee/llvm/                       \
+--with-llvmcc=/home/oren/GIT/MyKlee/llvm/Release/bin/clang    \
+--with-llvmcxx=/home/oren/GIT/MyKlee/llvm/Release/bin/clang++ \
+--with-stp=/home/oren/GIT/MyKlee/stp/build/                   \
+--with-uclibc=/home/oren/GIT/MyKlee/klee-uclibc               \
+--with-z3=/home/oren/GIT/MyKlee/z3/build/                     \
 --enable-posix-runtime
 
 make -j `nproc` ENABLE_OPTIMIZED=1
