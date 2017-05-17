@@ -4,3 +4,5 @@
 **/minisat/*
 **/stp/*
 **/z3/*
+!**/klee/lib/Core/ExecutionState.cpp
+!**/klee/ExecutionState.h
