@@ -1,8 +1,5 @@
-**/klee/*
 **/klee-uclibc/*
 **/llvm/*
 **/minisat/*
 **/stp/*
 **/z3/*
-!/home/oren/GIT/MyKlee/klee/lib/Core/ExecutionState.cpp
-!/home/oren/GIT/MyKlee/klee/ExecutionState.h
