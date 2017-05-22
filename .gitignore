@@ -4,5 +4,5 @@
 **/minisat/*
 **/stp/*
 **/z3/*
-!**/klee/lib/Core/ExecutionState.cpp
-!**/klee/ExecutionState.h
+!/home/oren/GIT/MyKlee/klee/lib/Core/ExecutionState.cpp
+!/home/oren/GIT/MyKlee/klee/ExecutionState.h
