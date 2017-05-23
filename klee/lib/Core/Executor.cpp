@@ -2125,14 +2125,38 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
   case Instruction::Store: {
     ref<Expr> base = eval(ki, 1, state).value;
     ref<Expr> value = eval(ki, 0, state).value;
-    //llvm::errs() << "OREN ISH SHALOM (OISH) is parsing Store: ";
-    //llvm::errs() << base.get()->getKind() << " ";
-    //llvm::errs() << ((ConstantExpr *) (base.get()))->getAPValue().getSExtValue() << "\n";
 
-    std::string OrenIshShalomStdString;    
-    ((ConstantExpr *) (base.get()))->toString(OrenIshShalomStdString);
-    //llvm::errs() << OrenIshShalomStdString << "\n";
-        
+    /****************************************/
+    /* [1] Cast instruction i into a storei */
+    /****************************************/
+    llvm::StoreInst *storei = (llvm::StoreInst *) i;
+
+    /**************************/
+    /* [1.a] value extraction */
+    /**************************/
+    uint64_t orenvalue = 0;
+
+    /*****************************/
+    /* [1.b] indices extractions */
+    /*****************************/
+    ConstantInt *CI = llvm::dyn_cast<ConstantInt>(storei->getValueOperand());
+
+    /*****************************/
+    /* [1.c] indices extractions */
+    /*****************************/
+    if (CI) { orenvalue = CI->getZExtValue(); }
+
+    if (orenvalue != 0)
+    {
+	    llvm::errs()                           <<
+	    "[OISH] [STORE]: "                     <<
+	    "*("                                   <<
+	    storei->getPointerOperand()->getName() <<
+	    ")"                                    <<
+	    " = "                                  <<
+	    orenvalue                              <<
+	    "\n";
+    }
     executeMemoryOperation(state, true, base, value, 0);
     break;
   }
@@ -2141,13 +2165,69 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     KGEPInstruction *kgepi = static_cast<KGEPInstruction*>(ki);
     ref<Expr> base = eval(ki, 0, state).value;
 
-    llvm::errs() << "OREN ISH SHALOM (OISH) is parsing GEP: ";
+    /**************************************/
+    /* [1] Cast instruction i into a gepi */
+    /**************************************/
+    llvm::GetElementPtrInst *gepi = (llvm::GetElementPtrInst *) i;
+
+    /*****************************/
+    /* [1.a] indices extractions */
+    /*****************************/
+    uint64_t index1 = 0;
+    uint64_t index2 = 0;
+
+    /*****************************/
+    /* [1.b] indices extractions */
+    /*****************************/
+    ConstantInt *CI1 = llvm::dyn_cast<ConstantInt>(gepi->getOperand(1));
+    ConstantInt *CI2 = llvm::dyn_cast<ConstantInt>(gepi->getOperand(2));
+
+    /*****************************/
+    /* [1.c] indices extractions */
+    /*****************************/
+    if (CI1) { index1 = CI1->getZExtValue(); }
+    if (CI2) { index2 = CI2->getZExtValue(); }
+
+    /*********************************/
+    /* [2] Process & Print this gepi */
+    /*********************************/
+    if ((index1 == 0) && (index2 == 0))
+    {
+        llvm::errs()                   <<
+    	"[OISH] [GEP  ]: "             <<
+    	gepi->getName()                <<
+    	" = "                          <<
+    	gepi->getOperand(0)->getName() <<
+    	"\n";
+    }
+    if ((index1 != 0) && (index2 == 0))
+    {
+        llvm::errs()                   <<
+    	"[OISH] [GEP  ]: "             <<
+    	gepi->getName()                <<
+    	" = "                          <<
+    	gepi->getOperand(0)->getName() <<
+    	" + index1 "                   <<
+    	index1                         <<
+    	"\n";
+    }
+    if ((index1 == 0) && (index2 != 0))
+    {
+        llvm::errs()                   <<
+    	"[OISH] [GEP  ]: "             <<
+    	gepi->getName()                <<
+    	" = "                          <<
+    	gepi->getOperand(0)->getName() <<
+    	" + "                          <<
+    	index2                         <<
+    	"\n";
+    }
 
     for (std::vector< std::pair<unsigned, uint64_t> >::iterator 
            it = kgepi->indices.begin(), ie = kgepi->indices.end(); 
          it != ie; ++it) {
       uint64_t elementSize = it->second;
-      llvm::errs() << "ELEMENNTSIZE = " << elementSize << "\n";
+      // llvm::errs() << "ELEMENNTSIZE = " << elementSize << "\n";
       ref<Expr> index = eval(ki, it->first, state).value;
       base = AddExpr::create(base,
                              MulExpr::create(Expr::createSExtToPointerWidth(index),
