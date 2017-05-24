@@ -1099,10 +1099,12 @@ const Cell& Executor::eval(KInstruction *ki, unsigned index,
   // Determine if this is a constant or not.
   if (vnumber < 0) {
     unsigned index = -vnumber - 2;
+    llvm::errs() << "OISH with vnumber < 0" << "\n";
     return kmodule->constantTable[index];
   } else {
     unsigned index = vnumber;
     StackFrame &sf = state.stack.back();
+    llvm::errs() << "OISH with index=vnumber=" << vnumber << ">= 0" << "\n";
     return sf.locals[index];
   }
 }
@@ -1906,7 +1908,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     // Arithmetic / logical
 
   case Instruction::Add: {
-    // llvm::errs() << "OREN ISH SHALOM (OISH) is parsing Add!" << "\n";
     ref<Expr> left = eval(ki, 0, state).value;
     ref<Expr> right = eval(ki, 1, state).value;
     bindLocal(ki, state, AddExpr::create(left, right));
@@ -1914,7 +1915,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
   }
 
   case Instruction::Sub: {
-    // llvm::errs() << "OREN ISH SHALOM (OISH) is parsing Sub!" << "\n";
     ref<Expr> left = eval(ki, 0, state).value;
     ref<Expr> right = eval(ki, 1, state).value;
     bindLocal(ki, state, SubExpr::create(left, right));
@@ -1922,7 +1922,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
   }
  
   case Instruction::Mul: {
-    // llvm::errs() << "OREN ISH SHALOM (OISH) is parsing Mul!" << "\n";
     ref<Expr> left = eval(ki, 0, state).value;
     ref<Expr> right = eval(ki, 1, state).value;
     bindLocal(ki, state, MulExpr::create(left, right));
