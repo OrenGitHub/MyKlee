@@ -102,8 +102,11 @@ public:
       parent(_parent), 
       allocSite(_allocSite) {
       static int numcalls=0;
-      //const llvm::AllocaInst *orenisimo = const llvm::AllocaInst * _allocSite;
-      //llvm::errs() << orenisimo->getName() << "\n";
+      const llvm::AllocaInst *orenisimo = (const llvm::AllocaInst *) _allocSite;
+      if (orenisimo)
+      {
+      	llvm::errs() << orenisimo->getName() << "\n";
+      }
       llvm::errs() << "CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
   }
 

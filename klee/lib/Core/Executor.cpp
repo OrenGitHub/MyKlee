@@ -1099,12 +1099,12 @@ const Cell& Executor::eval(KInstruction *ki, unsigned index,
   // Determine if this is a constant or not.
   if (vnumber < 0) {
     unsigned index = -vnumber - 2;
-    llvm::errs() << "OISH with vnumber < 0" << "\n";
+    //llvm::errs() << "OISH with vnumber < 0" << "\n";
     return kmodule->constantTable[index];
   } else {
     unsigned index = vnumber;
     StackFrame &sf = state.stack.back();
-    llvm::errs() << "OISH with index=vnumber=" << vnumber << ">= 0" << "\n";
+    //llvm::errs() << "OISH with index=vnumber=" << vnumber << ">= 0" << "\n";
     return sf.locals[index];
   }
 }
@@ -2118,6 +2118,43 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 
   case Instruction::Load: {
     ref<Expr> base = eval(ki, 0, state).value;
+    /****************************************/
+    /* [1] Cast instruction i into a storei */
+    /****************************************/
+    llvm::LoadInst *loadi = (llvm::LoadInst *) i;
+
+    /**************************/
+    /* [1.a] value extraction */
+    /**************************/
+    uint64_t orenvalue = 0;
+
+    /*****************************/
+    /* [1.b] indices extractions */
+    /*****************************/
+    ConstantInt *CI = llvm::dyn_cast<ConstantInt>(loadi->getPointerOperand());
+
+    /*****************************/
+    /* [1.c] indices extractions */
+    /*****************************/
+    if (CI)
+    {
+    	orenvalue = CI->getZExtValue();
+	    llvm::errs()                           <<
+	    "[OISH] [LOAD]: "                      <<
+	    loadi->getName()                       <<
+	    " = "                                  <<
+	    orenvalue                              <<
+	    "\n";
+    }
+    else
+    {
+	    llvm::errs()                           <<
+	    "[OISH] [LOAD]: "                      <<
+	    i->getName()                           <<
+	    " = "                                  <<
+	    loadi->getPointerOperand()->getName()  <<
+	    "\n";    	
+    }    
     executeMemoryOperation(state, false, base, 0, ki);
     break;
   }
@@ -2143,10 +2180,9 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     /*****************************/
     /* [1.c] indices extractions */
     /*****************************/
-    if (CI) { orenvalue = CI->getZExtValue(); }
-
-    if (orenvalue != 0)
+    if (CI)
     {
+    	orenvalue = CI->getZExtValue();
 	    llvm::errs()                           <<
 	    "[OISH] [STORE]: "                     <<
 	    "*("                                   <<
@@ -2155,6 +2191,15 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 	    " = "                                  <<
 	    orenvalue                              <<
 	    "\n";
+    }
+    else
+    {
+	    llvm::errs()                           <<
+	    "[OISH] [STORE]: "                     <<
+	    storei->getPointerOperand()->getName() <<
+	    " = "                                  <<
+	    storei->getValueOperand()->getName()   <<
+	    "\n";    	
     }
     executeMemoryOperation(state, true, base, value, 0);
     break;
@@ -2179,7 +2224,11 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     /* [1.b] indices extractions */
     /*****************************/
     ConstantInt *CI1 = llvm::dyn_cast<ConstantInt>(gepi->getOperand(1));
-    ConstantInt *CI2 = llvm::dyn_cast<ConstantInt>(gepi->getOperand(2));
+    ConstantInt *CI2 = 0;
+    if (gepi->getNumOperands() > 2)
+    {
+    	CI2 = llvm::dyn_cast<ConstantInt>(gepi->getOperand(2));
+    }
 
     /*****************************/
     /* [1.c] indices extractions */
@@ -2206,7 +2255,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     	gepi->getName()                <<
     	" = "                          <<
     	gepi->getOperand(0)->getName() <<
-    	" + index1 "                   <<
+    	" + "                          <<
     	index1                         <<
     	"\n";
     }
