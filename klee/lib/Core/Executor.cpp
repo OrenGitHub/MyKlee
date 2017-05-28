@@ -2014,6 +2014,26 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     CmpInst *ci = cast<CmpInst>(i);
     ICmpInst *ii = cast<ICmpInst>(ci);
  
+ 	llvm::errs()                 <<
+ 	"[OISH] [CMP  ]: "           <<
+ 	ci->getOperand(0)->getName() <<
+ 	", "                         <<
+ 	ci->getOperand(1)->getName() << "\n";
+ 
+ 	StackFrame &sf = state.stack.back();
+
+	std::vector<const MemoryObject*>::iterator it;
+	std::vector<const MemoryObject*>::iterator end=sf.allocas.end();
+	std::vector<const MemoryObject*>::iterator begin=sf.allocas.begin();
+	for (it = begin;it != end; it++)
+ 	{
+ 		llvm::errs() << "[OISH] [ALLOCAS]: " << ((*it)->allocSite)->getName()<< "\n";
+ 	}
+ 	
+ 	llvm::errs() << "[OISH] [LOCALS]: ";
+ 	sf.locals->value->print(llvm::errs());
+ 	llvm::errs() << "\n";
+ 
     switch(ii->getPredicate()) {
     case ICmpInst::ICMP_EQ: {
       ref<Expr> left = eval(ki, 0, state).value;
@@ -2140,7 +2160,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     {
     	orenvalue = CI->getZExtValue();
 	    llvm::errs()                           <<
-	    "[OISH] [LOAD]: "                      <<
+	    "[OISH] [LOAD ]: "                     <<
 	    loadi->getName()                       <<
 	    " = "                                  <<
 	    orenvalue                              <<
@@ -2149,7 +2169,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     else
     {
 	    llvm::errs()                           <<
-	    "[OISH] [LOAD]: "                      <<
+	    "[OISH] [LOAD ]: "                     <<
 	    i->getName()                           <<
 	    " = "                                  <<
 	    loadi->getPointerOperand()->getName()  <<
@@ -3565,7 +3585,7 @@ void Executor::executeMemoryOperation(ExecutionState &state,
     if (incomplete) {
       terminateStateEarly(*unbound, "Query timed out (resolve).");
     } else {
-      terminateStateOnError(*unbound, "memory error: out of bound pointer", Ptr,
+      terminateStateOnError(*unbound, "memory OISH[Executor:3568] error: out of bound pointer", Ptr,
                             NULL, getAddressInfo(*unbound, address));
     }
   }

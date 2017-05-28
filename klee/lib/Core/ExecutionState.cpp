@@ -143,7 +143,9 @@ void ExecutionState::pushFrame(KInstIterator caller, KFunction *kf) {
   stack.push_back(StackFrame(caller,kf));
 }
 
-void ExecutionState::popFrame() {
+void ExecutionState::popFrame()
+{
+  // OISH ... StackFrame
   StackFrame &sf = stack.back();
   for (std::vector<const MemoryObject*>::iterator it = sf.allocas.begin(), 
          ie = sf.allocas.end(); it != ie; ++it)
