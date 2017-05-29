@@ -39,7 +39,19 @@ struct StackFrame {
   KFunction *kf;
   CallPathNode *callPathNode;
 
+  /*****************************************/
+  /* OISH: this is pretty clear:           */
+  /* save all the original C variabels     */
+  /* these are the same variables that are */
+  /* allocated with the alloca             */
+  /*****************************************/  
   std::vector<const MemoryObject *> allocas;
+
+  /*****************************************/
+  /* OISH: this is *so* unclear:           */
+  /* I have absolutely no idea what these  */
+  /* locals are ...                        */
+  /*****************************************/  
   Cell *locals;
 
   /// Minimum distance to an uncovered instruction once the function

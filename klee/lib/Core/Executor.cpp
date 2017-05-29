@@ -1999,7 +1999,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     bindLocal(ki, state, result);
     break;
   }
-
   case Instruction::AShr: {
     ref<Expr> left = eval(ki, 0, state).value;
     ref<Expr> right = eval(ki, 1, state).value;
@@ -2030,10 +2029,19 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
  		llvm::errs() << "[OISH] [ALLOCAS]: " << ((*it)->allocSite)->getName()<< "\n";
  	}
  	
- 	llvm::errs() << "[OISH] [LOCALS]: ";
- 	sf.locals->value->print(llvm::errs());
- 	llvm::errs() << "\n";
- 
+
+ 	
+ 	for (unsigned int d=0;d < sf.kf->numRegisters; d++)
+ 	{
+ 	    if (strlen(sf.kf->instructions[d]->inst->getName().str().c_str()) > 0)
+ 	    {
+	 	    llvm::errs() << "[OISH] [LOCALS]: ";
+	 	    llvm::errs() << sf.kf->instructions[d]->inst->getName();
+	 	    // sf.locals[d].value->print(llvm::errs());
+	 	    llvm::errs() << "\n";
+	 	}
+	}
+	 
     switch(ii->getPredicate()) {
     case ICmpInst::ICMP_EQ: {
       ref<Expr> left = eval(ki, 0, state).value;
@@ -3516,22 +3524,32 @@ void Executor::executeMemoryOperation(ExecutionState &state,
       return;
     }
 
-    if (inBounds) {
+    if (inBounds)
+    {
       const ObjectState *os = op.second;
-      if (isWrite) {
-        if (os->readOnly) {
-          terminateStateOnError(state, "memory error: object read only",
-                                ReadOnly);
-        } else {
+      if (isWrite)
+      {
+        if (os->readOnly)
+        {
+          terminateStateOnError(
+          	state,
+          	"memory error: object read only",
+          	ReadOnly);
+        }
+        else
+        {
           ObjectState *wos = state.addressSpace.getWriteable(mo, os);
           wos->write(offset, value);
         }          
-      } else {
+      }
+      else
+      {
         ref<Expr> result = os->read(offset, type);
         
         if (interpreterOpts.MakeConcreteSymbolic)
+        {
           result = replaceReadWithSymbolic(state, result);
-        
+        }
         bindLocal(target, state, result);
       }
 
@@ -3539,9 +3557,19 @@ void Executor::executeMemoryOperation(ExecutionState &state,
     }
   } 
 
-  // we are on an error path (no resolution, multiple resolution, one
-  // resolution with out of bounds)
+  /*******************************************************************/
+  /* we are on an ERROR path from here on                            */
+  /* no resolution                                                   */
+  /* multiple resolution, or                                         */
+  /* one resolution with out of bounds                               */
+  /*******************************************************************/
   
+  static int counter=0;
+  
+  counter++;
+  
+  llvm::errs() << "COUNTER IS " << counter;
+
   ResolutionList rl;  
   solver->setTimeout(coreSolverTimeout);
   bool incomplete = state.addressSpace.resolve(state, solver, address, rl,
@@ -3551,7 +3579,8 @@ void Executor::executeMemoryOperation(ExecutionState &state,
   // XXX there is some query wasteage here. who cares?
   ExecutionState *unbound = &state;
   
-  for (ResolutionList::iterator i = rl.begin(), ie = rl.end(); i != ie; ++i) {
+  for (ResolutionList::iterator i = rl.begin(), ie = rl.end(); i != ie; ++i)
+  {
     const MemoryObject *mo = i->first;
     const ObjectState *os = i->second;
     ref<Expr> inBounds = mo->getBoundsCheckPointer(address, bytes);
@@ -3560,16 +3589,23 @@ void Executor::executeMemoryOperation(ExecutionState &state,
     ExecutionState *bound = branches.first;
 
     // bound can be 0 on failure or overlapped 
-    if (bound) {
-      if (isWrite) {
-        if (os->readOnly) {
+    if (bound)
+    {
+      if (isWrite)
+      {
+        if (os->readOnly)
+        {
           terminateStateOnError(*bound, "memory error: object read only",
                                 ReadOnly);
-        } else {
+        }
+        else
+        {
           ObjectState *wos = bound->addressSpace.getWriteable(mo, os);
           wos->write(mo->getOffsetExpr(address), value);
         }
-      } else {
+      }
+      else
+      {
         ref<Expr> result = os->read(mo->getOffsetExpr(address), type);
         bindLocal(target, *bound, result);
       }
@@ -3581,12 +3617,20 @@ void Executor::executeMemoryOperation(ExecutionState &state,
   }
   
   // XXX should we distinguish out of bounds and overlapped cases?
-  if (unbound) {
-    if (incomplete) {
+  if (unbound)
+  {
+    if (incomplete)
+    {
       terminateStateEarly(*unbound, "Query timed out (resolve).");
-    } else {
-      terminateStateOnError(*unbound, "memory OISH[Executor:3568] error: out of bound pointer", Ptr,
-                            NULL, getAddressInfo(*unbound, address));
+    }
+    else
+    {
+      terminateStateOnError(
+      	*unbound,
+      	"memory OISH[Executor:3568] error: out of bound pointer",
+      	Ptr,
+      	NULL,
+      	getAddressInfo(*unbound, address));
     }
   }
 }
