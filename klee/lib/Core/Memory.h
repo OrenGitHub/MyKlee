@@ -100,7 +100,8 @@ public:
       fake_object(false),
       isUserSpecified(false),
       parent(_parent), 
-      allocSite(_allocSite) {
+      allocSite(_allocSite)
+  {
       static int numcalls=0;
       const llvm::AllocaInst *orenisimo = (const llvm::AllocaInst *) _allocSite;
       if (orenisimo)
