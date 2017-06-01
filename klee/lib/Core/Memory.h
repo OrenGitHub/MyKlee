@@ -40,6 +40,10 @@ private:
   mutable unsigned refCount;
 
 public:
+
+  char who_allocated_me[100];
+
+public:
   unsigned id;
   uint64_t address;
 
@@ -103,12 +107,13 @@ public:
       allocSite(_allocSite)
   {
       static int numcalls=0;
-      const llvm::AllocaInst *orenisimo = (const llvm::AllocaInst *) _allocSite;
+      const llvm::Instruction *orenisimo = (const llvm::Instruction *) _allocSite;
       if (orenisimo)
       {
-      	llvm::errs() << orenisimo->getName() << "\n";
+      	llvm::errs() << "[OISH] alloc site = " << orenisimo->getName() << "\n";
       }
-      llvm::errs() << "CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
+      llvm::errs() << "[OISH] CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
+      llvm::errs() << "[OISH] WITH SIZE = " << size << "\n";
   }
 
   ~MemoryObject();

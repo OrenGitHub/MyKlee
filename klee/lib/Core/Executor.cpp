@@ -1775,6 +1775,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 
   case Instruction::Invoke:
   case Instruction::Call: {
+    llvm::errs() << "[OISH] is now evaluating function calls" << "\n";
     CallSite cs(i);
 
     unsigned numArgs = cs.arg_size();

@@ -41,8 +41,8 @@ klee/include/klee/TimerStatIncrementer.h
 klee/include/klee/klee.h
 klee/include/klee/util/
 klee/lib/Basic/
-klee/lib/Core/AddressSpace.cpp
-klee/lib/Core/AddressSpace.h
+#klee/lib/Core/AddressSpace.cpp
+#klee/lib/Core/AddressSpace.h
 klee/lib/Core/CallPathManager.cpp
 klee/lib/Core/CallPathManager.h
 klee/lib/Core/Context.cpp
@@ -59,7 +59,7 @@ lib/Core/ImpliedValue.cpp
 lib/Core/ImpliedValue.h
 lib/Core/Makefile
 lib/Core/Memory.cpp
-lib/Core/Memory.h
+#lib/Core/Memory.h
 lib/Core/MemoryManager.cpp
 lib/Core/MemoryManager.h
 lib/Core/ObjectHolder.h
