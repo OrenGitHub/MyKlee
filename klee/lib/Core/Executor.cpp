@@ -2030,19 +2030,71 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
  		llvm::errs() << "[OISH] [ALLOCAS]: " << ((*it)->allocSite)->getName()<< "\n";
  	}
  	
+ 	//for (unsigned int d=0;d < sf.kf->numRegisters; d++)
+ 	//{
+ 	//  if (strlen(sf.kf->instructions[d]->inst->getName().str().c_str()) > 0)
+ 	//  {
+	// 	    llvm::errs() << "[OISH] [LOCALS]: ";
+	// 	    llvm::errs() << sf.kf->instructions[d]->inst->getName();
+	// 	    sf.locals[d].value->print(llvm::errs());
+	// 	    llvm::errs() << "\n";
+	// 	}
+	//}
+	
+	ref<Expr> left  = eval(ki, 0, state).value;
+	ref<Expr> right = eval(ki, 1, state).value;
+	
+	char who_allocated_left[ 100]={0};
+	char who_allocated_right[100]={0};
+	
+	/********************************************************/
+	/* Call resolveOne to extract MemoryObject from command */
+	/********************************************************/
+    if (ConstantExpr *CE1_oren = dyn_cast<ConstantExpr>(left))
+    {
+      uint64_t address = CE1_oren->getZExtValue();
+      MemoryObject hack(address);
 
- 	
- 	for (unsigned int d=0;d < sf.kf->numRegisters; d++)
- 	{
- 	    if (strlen(sf.kf->instructions[d]->inst->getName().str().c_str()) > 0)
- 	    {
-	 	    llvm::errs() << "[OISH] [LOCALS]: ";
-	 	    llvm::errs() << sf.kf->instructions[d]->inst->getName();
-	 	    // sf.locals[d].value->print(llvm::errs());
-	 	    llvm::errs() << "\n";
-	 	}
-	}
-	 
+      /******************************************************************/
+      /* OISH: This is where the malloc size (for instance) is compared */
+      /* against the actual access index                                */
+      /******************************************************************/
+      if (const MemoryMap::value_type *res = state.addressSpace.objects.lookup_previous(&hack))
+      {
+        const MemoryObject *mo = res->first;
+        int mosize = mo->size;
+        llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
+        strcpy(who_allocated_left,mo->who_allocated_me);
+      }
+    }
+
+	/********************************************************/
+	/* Call resolveOne to extract MemoryObject from command */
+	/********************************************************/
+    if (ConstantExpr *CE2_oren = dyn_cast<ConstantExpr>(right))
+    {
+      uint64_t address = CE2_oren->getZExtValue();
+      MemoryObject hack(address);
+
+      /******************************************************************/
+      /* OISH: This is where the malloc size (for instance) is compared */
+      /* against the actual access index                                */
+      /******************************************************************/
+      if (const MemoryMap::value_type *res = state.addressSpace.objects.lookup_previous(&hack))
+      {
+        const MemoryObject *mo = res->first;
+        int mosize = mo->size;
+        llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
+        strcpy(who_allocated_right,mo->who_allocated_me);
+      }
+    }
+      
+    if (strcmp(who_allocated_left,who_allocated_right) != 0)
+    {
+      llvm::errs() << "You are making an illegal comparison you son of a bitch!!!" << "\n";
+      klee_error("Non ANSI C pointer comparison !!!\n");
+    }
+    
     switch(ii->getPredicate()) {
     case ICmpInst::ICMP_EQ: {
       ref<Expr> left = eval(ki, 0, state).value;

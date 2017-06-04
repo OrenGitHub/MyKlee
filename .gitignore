@@ -60,7 +60,7 @@ lib/Core/ImpliedValue.h
 lib/Core/Makefile
 lib/Core/Memory.cpp
 #lib/Core/Memory.h
-lib/Core/MemoryManager.cpp
+#lib/Core/MemoryManager.cpp
 lib/Core/MemoryManager.h
 lib/Core/ObjectHolder.h
 lib/Core/PTree.cpp

@@ -108,10 +108,29 @@ public:
   {
       static int numcalls=0;
       const llvm::Instruction *orenisimo = (const llvm::Instruction *) _allocSite;
+
+  	  strcpy(who_allocated_me,"UNINITIALIZED MEMORY");
+
       if (orenisimo)
       {
       	llvm::errs() << "[OISH] alloc site = " << orenisimo->getName() << "\n";
+      	switch (orenisimo->getOpcode()) {
+      	case (llvm::Instruction::Alloca):
+      	  memset(who_allocated_me,0,sizeof(who_allocated_me));
+      	  strcpy(who_allocated_me,"LOCAL VARIABLE");
+      	  break;
+      	case (llvm::Instruction::Call):
+      	  memset(who_allocated_me,0,sizeof(who_allocated_me));
+      	  strcpy(who_allocated_me,"MALLOC");
+      	  break;
+      	}
       }
+      if (size == 29)
+      {
+        strcpy(who_allocated_me,"CONSTANT STRING");
+        llvm::errs() << "[OISH] CONSTANT STRING" << "\n";
+      }
+      else
       llvm::errs() << "[OISH] CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
       llvm::errs() << "[OISH] WITH SIZE = " << size << "\n";
   }

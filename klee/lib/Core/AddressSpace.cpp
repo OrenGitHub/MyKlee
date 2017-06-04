@@ -78,8 +78,9 @@ bool AddressSpace::resolveOne(const ref<ConstantExpr> &addr,
     }
     else
     {
-      llvm::errs() << "[OISH] address  is " << address << "\n";
- 	  llvm::errs() << "[OISH] mo->size is " << mosize  << "\n";
+      llvm::errs() << "[OISH] address  is "   << address << "\n";
+ 	  llvm::errs() << "[OISH] mo->size is "   << mosize  << "\n";
+ 	  llvm::errs() << "[OISH] memory type = " << mo->who_allocated_me << "\n";
  	}
   }
   
