@@ -15,6 +15,7 @@
 
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/GlobalVariable.h"
 
 #include <vector>
 #include <string>
@@ -118,19 +119,26 @@ public:
       	case (llvm::Instruction::Alloca):
       	  memset(who_allocated_me,0,sizeof(who_allocated_me));
       	  strcpy(who_allocated_me,"LOCAL VARIABLE");
-      	  break;
+      	  return;
       	case (llvm::Instruction::Call):
       	  memset(who_allocated_me,0,sizeof(who_allocated_me));
       	  strcpy(who_allocated_me,"MALLOC");
-      	  break;
+      	  return;
       	}
       }
-      if (size == 29)
+      if (isGlobal)
       {
-        strcpy(who_allocated_me,"CONSTANT STRING");
-        llvm::errs() << "[OISH] CONSTANT STRING" << "\n";
+        //llvm::CallSite *CS = (llvm::CallSite *) allocSite;
+        //llvm::errs() << CS->getArgument(0‌​)->getOperand(0)->‌​getInitializer()->g‌​etAsCString();
+        if (size == 29)
+        {
+          memset(who_allocated_me,0,sizeof(who_allocated_me));            
+          strcpy(who_allocated_me,"CONSTANT STRING");
+          llvm::errs() << ((llvm::GlobalVariable *) allocSite)->isConstant() << "\n";
+          llvm::errs() << "[OISH] CONSTANT STRING" << "\n";
+        }
+        // llvm::errs() << _allocSite->getName();
       }
-      else
       llvm::errs() << "[OISH] CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
       llvm::errs() << "[OISH] WITH SIZE = " << size << "\n";
   }
