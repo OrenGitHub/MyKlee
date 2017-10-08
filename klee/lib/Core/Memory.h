@@ -106,7 +106,14 @@ public:
       isUserSpecified(false),
       parent(_parent), 
       allocSite(_allocSite)
-  {
+{
+
+      if (size == 11)
+      {
+          int MoishFrenkel=90;
+          llvm::errs() << MoishFrenkel << "\n";
+      }
+  
       static int numcalls=0;
       const llvm::Instruction *orenisimo = (const llvm::Instruction *) _allocSite;
 
@@ -114,7 +121,7 @@ public:
 
       if (orenisimo)
       {
-      	llvm::errs() << "[OISH] alloc site = " << orenisimo->getName() << "\n";
+      	// llvm::errs() << "[OISH] alloc site = " << orenisimo->getName() << "\n";
       	switch (orenisimo->getOpcode()) {
       	case (llvm::Instruction::Alloca):
       	  memset(who_allocated_me,0,sizeof(who_allocated_me));
@@ -134,13 +141,13 @@ public:
         {
           memset(who_allocated_me,0,sizeof(who_allocated_me));            
           strcpy(who_allocated_me,"CONSTANT STRING");
-          llvm::errs() << ((llvm::GlobalVariable *) allocSite)->isConstant() << "\n";
-          llvm::errs() << "[OISH] CONSTANT STRING" << "\n";
+          //llvm::errs() << ((llvm::GlobalVariable *) allocSite)->isConstant() << "\n";
+          //llvm::errs() << "[OISH] CONSTANT STRING" << "\n";
         }
         // llvm::errs() << _allocSite->getName();
       }
-      llvm::errs() << "[OISH] CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
-      llvm::errs() << "[OISH] WITH SIZE = " << size << "\n";
+      //llvm::errs() << "[OISH] CONSTRUCTING MemoryObject: " << numcalls++ << "\n";
+      //llvm::errs() << "[OISH] WITH SIZE = " << size << "\n";
   }
 
   ~MemoryObject();
@@ -209,6 +216,9 @@ private:
   // mutable because we may need flush during read of const
   mutable UpdateList updates;
 
+  // name
+  std::string name;
+
 public:
   unsigned size;
 
@@ -275,7 +285,7 @@ private:
   void markByteUnflushed(unsigned offset);
   void setKnownSymbolic(unsigned offset, Expr *value);
 
-  void print();
+  void print() const;
   ArrayCache *getArrayCache() const;
 };
   

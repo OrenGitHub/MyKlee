@@ -452,6 +452,11 @@ Executor::~Executor() {
 
 /***/
 
+void Executor::Handle_A_Call_To_Atoi_Function(void)
+{
+	llvm::errs() << "OISH Hijacked ATOI" << "\n";
+}
+
 void Executor::initializeGlobalObject(ExecutionState &state, ObjectState *os,
                                       const Constant *c, 
                                       unsigned offset) {
@@ -803,6 +808,15 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
   if (isSeeding)
     timeout *= it->second.size();
   solver->setTimeout(timeout);
+  /********************************/
+  /* OISH: Actual call for solver */
+  /********************************/
+  static int ROOTS=0;
+  // llvm::errs() << "ROOTS: " << ROOTS++ << "\n";
+  if (ROOTS == 484)
+  {
+  	int moish = 777;
+  }
   bool success = solver->evaluate(current, condition, res);
   solver->setTimeout(0);
   if (!success) {
@@ -1521,7 +1535,8 @@ static inline const llvm::fltSemantics * fpWidthToSemantics(unsigned width) {
   }
 }
 
-void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
+void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
+{
   Instruction *i = ki->inst;
   switch (i->getOpcode()) {
     // Control flow
@@ -1614,16 +1629,28 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
 #endif
-  case Instruction::Br: {
+  case Instruction::Br:
+  {
+    static int ZorbaTheGreek=0;
+    ZorbaTheGreek++;
     BranchInst *bi = cast<BranchInst>(i);
-    if (bi->isUnconditional()) {
+    if (bi->isUnconditional())
+    {
       transferToBasicBlock(bi->getSuccessor(0), bi->getParent(), state);
-    } else {
+    }
+    else
+    {
       // FIXME: Find a way that we don't have this hidden dependency.
       assert(bi->getCondition() == bi->getOperand(0) &&
              "Wrong operand index!");
       ref<Expr> cond = eval(ki, 0, state).value;
       Executor::StatePair branches = fork(state, cond, false);
+      if (ZorbaTheGreek == 828)
+      {
+        char s[1024]={0};
+        strcpy(s,bi->getName().str().c_str());
+        int i = strlen(s);
+      }
 
       // NOTE: There is a hidden dependency here, markBranchVisited
       // requires that we still be in the context of the branch
@@ -1775,7 +1802,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 
   case Instruction::Invoke:
   case Instruction::Call: {
-    llvm::errs() << "[OISH] is now evaluating function calls" << "\n";
+    // llvm::errs() << "[OISH] is now evaluating function calls" << "\n";
     CallSite cs(i);
 
     unsigned numArgs = cs.arg_size();
@@ -1790,6 +1817,43 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       terminateStateOnExecError(state, "inline assembly is unsupported");
       break;
     }
+    
+    /******************************/
+    /* OISH: Hijack atoi function */
+    /******************************/
+    if (strcmp(fp->getName().str().c_str(),"MyAtoi") == 0)
+    {
+    	// Handle_A_Call_To_Atoi_Function();
+    	// assert(0);
+    	// exit(0);
+    	// goto OISH_FINISHED_HANDLING_ATOI;
+    	int d=666;
+    }
+
+    /**********************************/
+    /* OISH: Hijack shishlik function */
+    /**********************************/
+    if (strcmp(fp->getName().str().c_str(),"shishlik") == 0)
+    {
+    	// Handle_A_Call_To_Atoi_Function();
+    	// assert(0);
+    	// exit(0);
+    	// goto OISH_FINISHED_HANDLING_ATOI;
+    	int d=777;
+    }
+
+    /**********************************/
+    /* OISH: Hijack shishlik function */
+    /**********************************/
+    if (strcmp(fp->getName().str().c_str(),"humus") == 0)
+    {
+    	// Handle_A_Call_To_Atoi_Function();
+    	// assert(0);
+    	// exit(0);
+    	// goto OISH_FINISHED_HANDLING_ATOI;
+    	int d=888;
+    }
+    
     // evaluate arguments
     std::vector< ref<Expr> > arguments;
     arguments.reserve(numArgs);
@@ -1882,6 +1946,8 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     }
     break;
   }
+OISH_FINISHED_HANDLING_ATOI:
+	break;  
   case Instruction::PHI: {
 #if LLVM_VERSION_CODE >= LLVM_VERSION(3, 0)
     ref<Expr> result = eval(ki, state.incomingBBIndex, state).value;
@@ -2014,11 +2080,11 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     CmpInst *ci = cast<CmpInst>(i);
     ICmpInst *ii = cast<ICmpInst>(ci);
  
- 	llvm::errs()                 <<
- 	"[OISH] [CMP  ]: "           <<
- 	ci->getOperand(0)->getName() <<
- 	", "                         <<
- 	ci->getOperand(1)->getName() << "\n";
+ 	//llvm::errs()                 <<
+ 	//"[OISH] [CMP  ]: "           <<
+ 	//ci->getOperand(0)->getName() <<
+ 	//", "                         <<
+ 	//ci->getOperand(1)->getName() << "\n";
  
  	StackFrame &sf = state.stack.back();
 
@@ -2027,7 +2093,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 	std::vector<const MemoryObject*>::iterator begin=sf.allocas.begin();
 	for (it = begin;it != end; it++)
  	{
- 		llvm::errs() << "[OISH] [ALLOCAS]: " << ((*it)->allocSite)->getName()<< "\n";
+ 		// llvm::errs() << "[OISH] [ALLOCAS]: " << ((*it)->allocSite)->getName()<< "\n";
  	}
  	
  	//for (unsigned int d=0;d < sf.kf->numRegisters; d++)
@@ -2063,7 +2129,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       {
         const MemoryObject *mo = res->first;
         int mosize = mo->size;
-        llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
+        // llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
         strcpy(who_allocated_left,mo->who_allocated_me);
       }
     }
@@ -2084,15 +2150,15 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       {
         const MemoryObject *mo = res->first;
         int mosize = mo->size;
-        llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
+        // llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
         strcpy(who_allocated_right,mo->who_allocated_me);
       }
     }
       
     if (strcmp(who_allocated_left,who_allocated_right) != 0)
     {
-      llvm::errs() << "You are making an illegal comparison you son of a bitch!!!" << "\n";
-      klee_error("Non ANSI C pointer comparison !!!\n");
+      // llvm::errs() << "You are making an illegal comparison you son of a bitch!!!" << "\n";
+      // klee_error("Non ANSI C pointer comparison !!!\n");
     }
     
     switch(ii->getPredicate()) {
@@ -2185,6 +2251,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     // Memory instructions...
   case Instruction::Alloca: {
     AllocaInst *ai = cast<AllocaInst>(i);
+    llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
     unsigned elementSize = 
       kmodule->targetData->getTypeStoreSize(ai->getAllocatedType());
     ref<Expr> size = Expr::createPointer(elementSize);
@@ -2192,6 +2259,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       ref<Expr> count = eval(ki, 0, state).value;
       count = Expr::createZExtToPointerWidth(count);
       size = MulExpr::create(size, count);
+      llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
     }
     executeAlloc(state, size, true, ki);
     break;
@@ -2220,21 +2288,21 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     if (CI)
     {
     	orenvalue = CI->getZExtValue();
-	    llvm::errs()                           <<
-	    "[OISH] [LOAD ]: "                     <<
-	    loadi->getName()                       <<
-	    " = "                                  <<
-	    orenvalue                              <<
-	    "\n";
+	    //llvm::errs()                           <<
+	    //"[OISH] [LOAD ]: "                     <<
+	    //loadi->getName()                       <<
+	    //" = "                                  <<
+	    //orenvalue                              <<
+	    //"\n";
     }
     else
     {
-	    llvm::errs()                           <<
-	    "[OISH] [LOAD ]: "                     <<
-	    i->getName()                           <<
-	    " = "                                  <<
-	    loadi->getPointerOperand()->getName()  <<
-	    "\n";    	
+	    //llvm::errs()                           <<
+	    //"[OISH] [LOAD ]: "                     <<
+	    //i->getName()                           <<
+	    //" = "                                  <<
+	    //loadi->getPointerOperand()->getName()  <<
+	    //"\n";    	
     }    
     executeMemoryOperation(state, false, base, 0, ki);
     break;
@@ -2264,23 +2332,28 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     if (CI)
     {
     	orenvalue = CI->getZExtValue();
-	    llvm::errs()                           <<
-	    "[OISH] [STORE]: "                     <<
-	    "*("                                   <<
-	    storei->getPointerOperand()->getName() <<
-	    ")"                                    <<
-	    " = "                                  <<
-	    orenvalue                              <<
-	    "\n";
+    	if (orenvalue == '7')
+    	{
+    		int ddd=800;
+    		llvm::errs() << "[OISH] [STORE]: " << storei->getPointerOperand()->getName() << "\n";
+    	}
+	    //llvm::errs()                           <<
+	    //"[OISH] [STORE]: "                     <<
+	    //"*("                                   <<
+	    //storei->getPointerOperand()->getName() <<
+	    //")"                                    <<
+	    //" = "                                  <<
+	    //orenvalue                              <<
+	    //"\n";
     }
     else
     {
-	    llvm::errs()                           <<
-	    "[OISH] [STORE]: "                     <<
-	    storei->getPointerOperand()->getName() <<
-	    " = "                                  <<
-	    storei->getValueOperand()->getName()   <<
-	    "\n";    	
+	    //llvm::errs()                           <<
+	    //"[OISH] [STORE]: "                     <<
+	    //storei->getPointerOperand()->getName() <<
+	    //" = "                                  <<
+	    //storei->getValueOperand()->getName()   <<
+	    //"\n";    	
     }
     executeMemoryOperation(state, true, base, value, 0);
     break;
@@ -2322,34 +2395,34 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     /*********************************/
     if ((index1 == 0) && (index2 == 0))
     {
-        llvm::errs()                   <<
-    	"[OISH] [GEP  ]: "             <<
-    	gepi->getName()                <<
-    	" = "                          <<
-    	gepi->getOperand(0)->getName() <<
-    	"\n";
+        //llvm::errs()                   <<
+    	//"[OISH] [GEP  ]: "             <<
+    	//gepi->getName()                <<
+    	//" = "                          <<
+    	//gepi->getOperand(0)->getName() <<
+    	//"\n";
     }
     if ((index1 != 0) && (index2 == 0))
     {
-        llvm::errs()                   <<
-    	"[OISH] [GEP  ]: "             <<
-    	gepi->getName()                <<
-    	" = "                          <<
-    	gepi->getOperand(0)->getName() <<
-    	" + "                          <<
-    	index1                         <<
-    	"\n";
+        //llvm::errs()                   <<
+    	//"[OISH] [GEP  ]: "             <<
+    	//gepi->getName()                <<
+    	//" = "                          <<
+    	//gepi->getOperand(0)->getName() <<
+    	//" + "                          <<
+    	//index1                         <<
+    	//"\n";
     }
     if ((index1 == 0) && (index2 != 0))
     {
-        llvm::errs()                   <<
-    	"[OISH] [GEP  ]: "             <<
-    	gepi->getName()                <<
-    	" = "                          <<
-    	gepi->getOperand(0)->getName() <<
-    	" + "                          <<
-    	index2                         <<
-    	"\n";
+        //llvm::errs()                   <<
+    	//"[OISH] [GEP  ]: "             <<
+    	//gepi->getName()                <<
+    	//" = "                          <<
+    	//gepi->getOperand(0)->getName() <<
+    	//" + "                          <<
+    	//index2                         <<
+    	//"\n";
     }
 
     for (std::vector< std::pair<unsigned, uint64_t> >::iterator 
@@ -3932,11 +4005,13 @@ bool Executor::getSymbolicSolution(const ExecutionState &state,
   // the preferred constraints.  See test/Features/PreferCex.c for
   // an example) While this process can be very expensive, it can
   // also make understanding individual test cases much easier.
-  for (unsigned i = 0; i != state.symbolics.size(); ++i) {
+  for (unsigned i = 0; i != state.symbolics.size(); ++i)
+  {
     const MemoryObject *mo = state.symbolics[i].first;
     std::vector< ref<Expr> >::const_iterator pi = 
       mo->cexPreferences.begin(), pie = mo->cexPreferences.end();
-    for (; pi != pie; ++pi) {
+    for (; pi != pie; ++pi)
+    {
       bool mustBeTrue;
       // Attempt to bound byte to constraints held in cexPreferences
       bool success = solver->mustBeTrue(tmp, Expr::createIsZero(*pi), 
@@ -3948,7 +4023,10 @@ bool Executor::getSymbolicSolution(const ExecutionState &state,
       if (!success) break;
       // If the particular constraint operated on in this iteration through
       // the loop isn't implied then add it to the list of constraints.
-      if (!mustBeTrue) tmp.addConstraint(*pi);
+      if (!mustBeTrue)
+      {
+        tmp.addConstraint(*pi);
+      }
     }
     if (pi!=pie) break;
   }

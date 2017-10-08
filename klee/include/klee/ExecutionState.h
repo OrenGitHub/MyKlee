@@ -148,6 +148,12 @@ public:
   /// @brief Ordered list of symbolics: used to generate test cases.
   //
   // FIXME: Move to a shared list structure (not critical).
+  /****************************************************************************/
+  /* OISH: This is what I was looking for ... a connection between the actual */
+  /* allocation (MemoryObject *) and the symbolic buffer (Klee::Array *)      */
+  /* I need to be able to ask: "what is the (MemoryObject *) corresponding to */
+  /* this (Klee::Array *) symbolic buffer ?                                   */
+  /****************************************************************************/
   std::vector<std::pair<const MemoryObject *, const Array *> > symbolics;
 
   /// @brief Set of used array names for this state.  Used to avoid collisions.
