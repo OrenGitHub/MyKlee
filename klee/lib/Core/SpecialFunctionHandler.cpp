@@ -980,6 +980,72 @@ void SpecialFunctionHandler::handleMyStrlen(
 	llvm::errs() << "***************************************" << "\n";
 	llvm::errs() << "* [0] MyStrlen formula implementation *" << "\n";
 	llvm::errs() << "***************************************" << "\n";
+
+	/******************************************************************/
+	/* [2] resolveExact is commented out -- wrong guy for the job ... */
+	/******************************************************************/
+	//Executor::ExactResolutionList resolutionList;
+	//executor.resolveExact(
+	//	state,
+	//	arguments[0],
+	//	resolutionList,
+	//	"MyAtoi");
+	//const MemoryObject *mo = resolutionList[0].first.first;
+	//const ObjectState  *os = resolutionList[0].first.second;
+	
+	/*********************************************************/
+	/* [3] This is the right guy for the job: resolveOne ... */
+	/*********************************************************/
+	state.addressSpace.resolveOne(
+		state,
+		executor.solver,
+		arguments[0],
+		op,
+		success);
+
+	/************************************/
+	/* [3] Yes ! Everything went well ! */
+	/************************************/
+	llvm::errs() << "********************************" << "\n";
+	llvm::errs() << "* [1] resolveOne succeeded ... *" << "\n";
+	llvm::errs() << "********************************" << "\n";
+	
+	/************************************************************************/
+	/* [4] Use MemoryObject & ObjectState that returned from resolveOne ... */
+	/************************************************************************/
+	mo = op.first;
+	os = op.second;
+
+	/**********************************/
+	/* [4] Yes! Everything went well! */
+	/**********************************/
+	llvm::errs() << "*****************************************" << "\n";
+	llvm::errs() << "* [2] mo + os assignments succeeded ... *" << "\n";
+	llvm::errs() << "*****************************************" << "\n";
+
+	/**********************************************************/
+	/* [5] where does arg0 points inside the symbolic array ? */
+	/**********************************************************/
+	offset_of_p_within_MISHMISH = mo->getOffsetExpr(arguments[0]);
+
+	llvm::errs() << "*************************************************" << "\n";
+	llvm::errs() << "* [3] offset of p within MISHMISH succeeded ... *" << "\n";
+	llvm::errs() << "*************************************************" << "\n";
+
+	/*****************************************************************/
+	/* [6] Use many helper functions to assemble the overall formula */
+	/*     for MyAtoi. Use maxStringLength as a parameter ...        */
+	/*****************************************************************/
+	ref<Expr> MyAtoiFormula =
+	MyAtoiFormula_for_strings_with_length_leq(maxStringLength);
+	
+	/****************************************************************/
+	/* [7] use bindLocal to bind the returned value of the function */
+	/****************************************************************/
+	executor.bindLocal(
+		target, 
+		state,
+		MyAtoiFormula);
 }
 
 void SpecialFunctionHandler::handleMyAtoi(
