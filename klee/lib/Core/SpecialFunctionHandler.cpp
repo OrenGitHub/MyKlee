@@ -969,11 +969,39 @@ ref<Expr> MyAtoiFormula_for_strings_with_length_leq(int maxStringLength)
 		);
 }
 
+ref<Expr> MyStrlenFormula_for_null_terminated_strings(void)
+{
+	return constant(-1);
+	//	IteExpr::create
+	//	(
+	//		SgeExpr::create
+	//		(
+	//			first_backslash_x00(),
+	//			StrlenExpr::create(offset_of_p_within_MISHMISH)
+	//		),
+	//		StrlenExpr::create(offset_of_p_within_MISHMISH),
+	//		first_backslash_x00()
+	//	);
+}
+
+ref<Expr> MyStrlenFormula(void)
+{
+	return constant(-1);
+	//	IteExpr::create
+	//	(
+	//		no_0_inside_string,
+	//		constant(-1),
+	//		MyStrlenFormula_for_null_terminated_strings()
+	//	);
+}
+
 void SpecialFunctionHandler::handleMyStrlen(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
+	bool success=true;
+
 	/**************************************************************/
 	/* [1] Make sure MyStrlen uses the SMT-formula implementation */
 	/**************************************************************/
@@ -1028,16 +1056,17 @@ void SpecialFunctionHandler::handleMyStrlen(
 	/**********************************************************/
 	offset_of_p_within_MISHMISH = mo->getOffsetExpr(arguments[0]);
 
+	/**********************************/
+	/* [5] Yes! Everything went well! */
+	/**********************************/
 	llvm::errs() << "*************************************************" << "\n";
 	llvm::errs() << "* [3] offset of p within MISHMISH succeeded ... *" << "\n";
 	llvm::errs() << "*************************************************" << "\n";
 
-	/*****************************************************************/
-	/* [6] Use many helper functions to assemble the overall formula */
-	/*     for MyAtoi. Use maxStringLength as a parameter ...        */
-	/*****************************************************************/
-	ref<Expr> MyAtoiFormula =
-	MyAtoiFormula_for_strings_with_length_leq(maxStringLength);
+	/********************************************************************************/
+	/* [6] Use (many) helper functions to assemble the overall formula for MyStrlen */
+	/********************************************************************************/
+	ref<Expr> MyStrlenFormula = constant(3);//MyStrlenFormula();
 	
 	/****************************************************************/
 	/* [7] use bindLocal to bind the returned value of the function */
@@ -1045,7 +1074,7 @@ void SpecialFunctionHandler::handleMyStrlen(
 	executor.bindLocal(
 		target, 
 		state,
-		MyAtoiFormula);
+		MyStrlenFormula);
 }
 
 void SpecialFunctionHandler::handleMyAtoi(

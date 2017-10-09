@@ -2436,8 +2436,9 @@ OISH_FINISHED_HANDLING_ATOI:
                                              Expr::createPointer(elementSize)));
     }
     if (kgepi->offset)
-      base = AddExpr::create(base,
-                             Expr::createPointer(kgepi->offset));
+    {
+        base = AddExpr::create(base,Expr::createPointer(kgepi->offset));
+    }
     bindLocal(ki, state, base);
     break;
   }
