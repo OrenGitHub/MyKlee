@@ -99,8 +99,14 @@ static SpecialFunctionHandler::HandlerInfo handlerInfo[] = {
   /*************************************/
   /* true is for returning a value ... */
   /*************************************/
-  add("MyAtoi",   handleMyAtoi,   true),
-  add("MyStrlen", handleMyStrlen, true),
+  add("MyAtoi",                    handleMyAtoi,                  true),
+  add("My_p_assign_q_plus_i",      handleMy_p_assign_q_plus_i,    false),
+  add("My_p_assign_NULL",          handle_p_assign_NULL,          false),
+  add("My_p_at_offset_i_assign_c", handle_p_at_offset_i_assign_c, false),
+  add("My_p_at_offset_i_assign_0", handle_p_at_offset_i_assign_0, false),
+  add("MyMalloc",                  handleMyMalloc,                false),
+  add("MyStrchr",                  handleMyStrchr,                false),
+  add("MyStrlen",                  handleMyStrlen,                true),
   add("klee_get_value_i32", handleGetValue, true),
   add("klee_get_value_i64", handleGetValue, true),
   add("klee_define_fixed_object", handleDefineFixedObject, false),
@@ -1077,6 +1083,54 @@ void SpecialFunctionHandler::handleMyStrlen(
 		MyStrlenFormula);
 }
 
+void SpecialFunctionHandler::handleMy_p_assign_q_plus_i(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
+void SpecialFunctionHandler::handle_p_assign_NULL(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
+void SpecialFunctionHandler::handle_p_at_offset_i_assign_c(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
+void SpecialFunctionHandler::handle_p_at_offset_i_assign_0(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
+void SpecialFunctionHandler::handleMyMalloc(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
+void SpecialFunctionHandler::handleMyStrchr(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	
+}
+
 void SpecialFunctionHandler::handleMyAtoi(
 	ExecutionState &state,
 	KInstruction *target,
@@ -1141,6 +1195,7 @@ void SpecialFunctionHandler::handleMyAtoi(
 	/* [6] Use many helper functions to assemble the overall formula */
 	/*     for MyAtoi. Use maxStringLength as a parameter ...        */
 	/*****************************************************************/
+	int david = 299;
 	ref<Expr> MyAtoiFormula =
 	MyAtoiFormula_for_strings_with_length_leq(maxStringLength);
 	
