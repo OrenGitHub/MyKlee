@@ -1096,20 +1096,33 @@ void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-
-	state.OrenIshShalom = 778950;
-
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
 	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+
+	/***************************************************/
+	/* [2] Extract the first (and only) input argument */
+	/***************************************************/
 	llvm::Value *value = callInst->getArgOperand(0);
-	
-	llvm::errs() << value->getName() << "\n";
-			
-	/****************************************************************************/
-	/* [1] Make sure p_at_offset_i_assign_c uses the SMT-formula implementation */
-	/****************************************************************************/
-	llvm::errs() << "*****************************************************" << "\n";
-	llvm::errs() << "* [0] p_at_offset_i_assign_c formula implementation *" << "\n";
-	llvm::errs() << "*****************************************************" << "\n";
+		
+	/****************************************************/
+	/* [3] Take the name of the input (string) argument */
+	/****************************************************/
+	std::string varName = value->getName().str();
+
+	/*************************************************/
+	/* [4] Apply the relevant semantics transformer: */
+	/*     for p := NULL, this involves only setting */
+	/*     serial(p) := 0                            */
+	/*     that is, a non existing serial            */
+	/*************************************************/
+	state.oren_serials[varName] = 0;
+
+	/***********************************/
+	/* [5] For debug purposes only ... */
+	/***********************************/
+	llvm::errs() << varName << "\n";
 }
 
 void SpecialFunctionHandler::handleMy_p_at_offset_i_assign_c(
