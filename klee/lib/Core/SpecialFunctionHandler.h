@@ -120,6 +120,12 @@ namespace klee {
     HANDLER(handleNew);
     HANDLER(handleNewArray);
     HANDLER(handleMyAtoi);
+    HANDLER(handleMy_p_assign_q_plus_i);
+    HANDLER(handleMy_p_assign_NULL);
+    HANDLER(handleMy_p_at_offset_i_assign_c);
+    HANDLER(handleMy_p_at_offset_i_assign_0);
+    HANDLER(handleMyMalloc);
+    HANDLER(handleMyStrchr);
     HANDLER(handleMyStrlen);
     HANDLER(handlePreferCex);
     HANDLER(handlePosixPreferCex);

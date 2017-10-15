@@ -99,14 +99,14 @@ static SpecialFunctionHandler::HandlerInfo handlerInfo[] = {
   /*************************************/
   /* true is for returning a value ... */
   /*************************************/
-  add("MyAtoi",                    handleMyAtoi,                  true),
-  add("My_p_assign_q_plus_i",      handleMy_p_assign_q_plus_i,    false),
-  add("My_p_assign_NULL",          handle_p_assign_NULL,          false),
-  add("My_p_at_offset_i_assign_c", handle_p_at_offset_i_assign_c, false),
-  add("My_p_at_offset_i_assign_0", handle_p_at_offset_i_assign_0, false),
-  add("MyMalloc",                  handleMyMalloc,                false),
-  add("MyStrchr",                  handleMyStrchr,                false),
-  add("MyStrlen",                  handleMyStrlen,                true),
+  add("MyAtoi",                    handleMyAtoi,                    true),
+  add("My_p_assign_q_plus_i",      handleMy_p_assign_q_plus_i,      false),
+  add("My_p_assign_NULL",          handleMy_p_assign_NULL,          false),
+  add("My_p_at_offset_i_assign_c", handleMy_p_at_offset_i_assign_c, false),
+  add("My_p_at_offset_i_assign_0", handleMy_p_at_offset_i_assign_0, false),
+  add("MyMalloc",                  handleMyMalloc,                  false),
+  add("MyStrchr",                  handleMyStrchr,                  false),
+  add("MyStrlen",                  handleMyStrlen,                  true),
   add("klee_get_value_i32", handleGetValue, true),
   add("klee_get_value_i64", handleGetValue, true),
   add("klee_define_fixed_object", handleDefineFixedObject, false),
@@ -1091,23 +1091,41 @@ void SpecialFunctionHandler::handleMy_p_assign_q_plus_i(
 	
 }
 
-void SpecialFunctionHandler::handle_p_assign_NULL(
+void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
+
+	state.OrenIshShalom = 778950;
+
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+	llvm::Value *value = callInst->getArgOperand(0);
 	
+	llvm::errs() << value->getName() << "\n";
+			
+	/****************************************************************************/
+	/* [1] Make sure p_at_offset_i_assign_c uses the SMT-formula implementation */
+	/****************************************************************************/
+	llvm::errs() << "*****************************************************" << "\n";
+	llvm::errs() << "* [0] p_at_offset_i_assign_c formula implementation *" << "\n";
+	llvm::errs() << "*****************************************************" << "\n";
 }
 
-void SpecialFunctionHandler::handle_p_at_offset_i_assign_c(
+void SpecialFunctionHandler::handleMy_p_at_offset_i_assign_c(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	
+	/****************************************************************************/
+	/* [1] Make sure p_at_offset_i_assign_c uses the SMT-formula implementation */
+	/****************************************************************************/
+	llvm::errs() << "*****************************************************" << "\n";
+	llvm::errs() << "* [0] p_at_offset_i_assign_c formula implementation *" << "\n";
+	llvm::errs() << "*****************************************************" << "\n";	
 }
 
-void SpecialFunctionHandler::handle_p_at_offset_i_assign_0(
+void SpecialFunctionHandler::handleMy_p_at_offset_i_assign_0(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
@@ -1117,7 +1135,7 @@ void SpecialFunctionHandler::handle_p_at_offset_i_assign_0(
 	/****************************************************************************/
 	llvm::errs() << "*****************************************************" << "\n";
 	llvm::errs() << "* [0] p_at_offset_i_assign_0 formula implementation *" << "\n";
-	llvm::errs() << "*****************************************************" << "\n";		
+	llvm::errs() << "*****************************************************" << "\n";
 }
 
 void SpecialFunctionHandler::handleMyMalloc(
