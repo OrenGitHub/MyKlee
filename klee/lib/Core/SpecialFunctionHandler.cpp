@@ -1112,7 +1112,12 @@ void SpecialFunctionHandler::handle_p_at_offset_i_assign_0(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	
+	/****************************************************************************/
+	/* [1] Make sure p_at_offset_i_assign_0 uses the SMT-formula implementation */
+	/****************************************************************************/
+	llvm::errs() << "*****************************************************" << "\n";
+	llvm::errs() << "* [0] p_at_offset_i_assign_0 formula implementation *" << "\n";
+	llvm::errs() << "*****************************************************" << "\n";		
 }
 
 void SpecialFunctionHandler::handleMyMalloc(
@@ -1120,7 +1125,12 @@ void SpecialFunctionHandler::handleMyMalloc(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	
+	/**************************************************************/
+	/* [1] Make sure MyMalloc uses the SMT-formula implementation */
+	/**************************************************************/
+	llvm::errs() << "***************************************" << "\n";
+	llvm::errs() << "* [0] MyMalloc formula implementation *" << "\n";
+	llvm::errs() << "***************************************" << "\n";		
 }
 
 void SpecialFunctionHandler::handleMyStrchr(
@@ -1128,7 +1138,12 @@ void SpecialFunctionHandler::handleMyStrchr(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	
+	/**************************************************************/
+	/* [1] Make sure MyStrchr uses the SMT-formula implementation */
+	/**************************************************************/
+	llvm::errs() << "***************************************" << "\n";
+	llvm::errs() << "* [0] MyStrchr formula implementation *" << "\n";
+	llvm::errs() << "***************************************" << "\n";	
 }
 
 void SpecialFunctionHandler::handleMyAtoi(
