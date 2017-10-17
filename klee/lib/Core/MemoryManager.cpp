@@ -130,7 +130,7 @@ MemoryObject *MemoryManager::allocate(uint64_t size, bool isLocal,
     {
       if (size == 11)
       {
-        llvm::errs() << "11" << "\n";
+        // llvm::errs() << "11" << "\n";
       }
       address = (uint64_t)malloc(size);
       memset((char *) address,'g',size);

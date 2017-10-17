@@ -2276,7 +2276,9 @@ OISH_FINISHED_HANDLING_ATOI:
     /*************/
     if (strncmp(localVarName,"OISH_",strlen("OISH_")) == 0)
     {
-    	llvm::errs() << "OISH IS A BIG COCK SUCKER !!!" << "\n";
+    	static int numLocalVariables=0;
+    	llvm::errs() << "LOCAL VARIABLE " << numLocalVariables++ << " = " << localVarName << "\n";
+    	state.localVariables.insert(localVarName);
     }
     
     unsigned elementSize = 
@@ -2294,10 +2296,31 @@ OISH_FINISHED_HANDLING_ATOI:
 
   case Instruction::Load: {
     ref<Expr> base = eval(ki, 0, state).value;
-    /****************************************/
-    /* [1] Cast instruction i into a storei */
-    /****************************************/
+    /***************************************/
+    /* [1] Cast instruction i into a loadi */
+  	/***************************************/
     llvm::LoadInst *loadi = (llvm::LoadInst *) i;
+
+    /******************************************/
+    /* [1] Extract dst and src var names ...  */
+  	/******************************************/
+	char srcVarName[256];
+	char dstVarName[256];
+	
+	memset(srcVarName,0,sizeof(srcVarName));
+	memset(dstVarName,0,sizeof(dstVarName));
+	
+	strcpy(srcVarName,loadi->getPointerOperand()->getName().str().c_str());
+	strcpy(dstVarName,loadi->getName().str().c_str());
+
+    /****************************************/
+    /* [1] Print dst and src var names ...  */
+  	/****************************************/
+  	if (strncmp(srcVarName,"OISH_",strlen("OISH_")) == 0)
+  	{
+		llvm::errs() << "OISH LOAD DST(" << dstVarName << ") = SRC(" << srcVarName << ")\n";
+		state.varNames[dstVarName] = srcVarName;
+	}
 
     /**************************/
     /* [1.a] value extraction */

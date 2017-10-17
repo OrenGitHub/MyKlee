@@ -170,6 +170,19 @@ public:
 	/****************************************/
 	int OrenIshShalom;
 
+	/***********************/
+	/* Local variables ... */
+	/***********************/
+	std::set<std::string> localVariables;
+
+	/*****************************************************************************************/
+	/* varNames is to enable easy name identification of variables                           */
+	/* We basically allow ourselves to call local variables with the OISH_ prefix            */
+	/* then, for every temporary called tmp, arrayidx7 etc. we simply locate it all          */
+	/* the way up to the original local variable ... this bypasses a lot of klee's hardships */
+	/*****************************************************************************************/
+	std::map<std::string,std::string> varNames;
+
 	/****************************/
 	/* svars = string variables */
 	/* ------------------------ */
