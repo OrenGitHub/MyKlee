@@ -2251,7 +2251,34 @@ OISH_FINISHED_HANDLING_ATOI:
     // Memory instructions...
   case Instruction::Alloca: {
     AllocaInst *ai = cast<AllocaInst>(i);
-    llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
+    // llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
+    
+    /*******************************************/
+    /* Handle Local Variable declarations here */
+    /*******************************************/
+    /*********************************************/
+    /* I just love c style buffers ... sorry ... */
+    /*********************************************/
+    char localVarName[256];
+
+    /*********************************************/
+    /* Clear the (c style) buffer ... lovely !!! */
+    /*********************************************/
+    memset(localVarName,0,sizeof(localVarName));
+
+    /*****************************************************/
+    /* copy the local variable name ... is it "ours" ??? */
+    /*****************************************************/
+    strcpy(localVarName,ai->getName().str().c_str());
+
+    /*************/
+    /* is it ??? */
+    /*************/
+    if (strncmp(localVarName,"OISH_",strlen("OISH_")) == 0)
+    {
+    	llvm::errs() << "OISH IS A BIG COCK SUCKER !!!" << "\n";
+    }
+    
     unsigned elementSize = 
       kmodule->targetData->getTypeStoreSize(ai->getAllocatedType());
     ref<Expr> size = Expr::createPointer(elementSize);
@@ -2259,7 +2286,7 @@ OISH_FINISHED_HANDLING_ATOI:
       ref<Expr> count = eval(ki, 0, state).value;
       count = Expr::createZExtToPointerWidth(count);
       size = MulExpr::create(size, count);
-      llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
+      // llvm::errs() << "[OISH] [ALLOCA]: " << ai->getName() << "\n";
     }
     executeAlloc(state, size, true, ki);
     break;

@@ -99,14 +99,18 @@ static SpecialFunctionHandler::HandlerInfo handlerInfo[] = {
   /*************************************/
   /* true is for returning a value ... */
   /*************************************/
-  add("MyAtoi",                    handleMyAtoi,                    true),
-  add("My_p_assign_q_plus_i",      handleMy_p_assign_q_plus_i,      false),
-  add("My_p_assign_NULL",          handleMy_p_assign_NULL,          false),
-  add("My_p_at_offset_i_assign_c", handleMy_p_at_offset_i_assign_c, false),
-  add("My_p_at_offset_i_assign_0", handleMy_p_at_offset_i_assign_0, false),
-  add("MyMalloc",                  handleMyMalloc,                  false),
-  add("MyStrchr",                  handleMyStrchr,                  false),
-  add("MyStrlen",                  handleMyStrlen,                  true),
+  add("MyAtoi",                      handleMyAtoi,                      true),
+  add("MyIntAssign",                 handleMyIntAssign,                 false),
+  add("My_p_assign_NULL",            handleMy_p_assign_NULL,            false),
+  add("MyCharAssign",                handleMyCharAssign,                false),
+  add("MyConstStringAssign",         handleMyConstStringAssign,         false),
+  add("MyWriteCharToStringAtOffset", handleMyWriteCharToStringAtOffset, false),
+  add("MyReadCharFromStringAtOffset",handleMyReadCharFromStringAtOffset,false),
+  add("MyMalloc",                    handleMyMalloc,                    false),
+  add("MyStrcpy",                    handleMyStrcpy,                    false),
+  add("MyStrchr",                    handleMyStrchr,                    false),
+  add("MyStrcmp",                    handleMyStrcmp,                    true),
+  add("MyStrlen",                    handleMyStrlen,                    true),
   add("klee_get_value_i32", handleGetValue, true),
   add("klee_get_value_i64", handleGetValue, true),
   add("klee_define_fixed_object", handleDefineFixedObject, false),
@@ -1083,13 +1087,35 @@ void SpecialFunctionHandler::handleMyStrlen(
 		MyStrlenFormula);
 }
 
-void SpecialFunctionHandler::handleMy_p_assign_q_plus_i(
+void SpecialFunctionHandler::handleMyStrcpy(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments)
-{
-	
-}
+	std::vector<ref<Expr> > &arguments){}
+
+void SpecialFunctionHandler::handleMyConstStringAssign(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments){}
+
+void SpecialFunctionHandler::handleMyStrcmp(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments){}
+
+void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments){}
+
+void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments){}
+
+void SpecialFunctionHandler::handleMyCharAssign(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments){}
 
 void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	ExecutionState &state,
@@ -1125,30 +1151,44 @@ void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	llvm::errs() << varName << "\n";
 }
 
-void SpecialFunctionHandler::handleMy_p_at_offset_i_assign_c(
+void SpecialFunctionHandler::handleMyIntAssign(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	/****************************************************************************/
-	/* [1] Make sure p_at_offset_i_assign_c uses the SMT-formula implementation */
-	/****************************************************************************/
-	llvm::errs() << "*****************************************************" << "\n";
-	llvm::errs() << "* [0] p_at_offset_i_assign_c formula implementation *" << "\n";
-	llvm::errs() << "*****************************************************" << "\n";	
-}
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
 
-void SpecialFunctionHandler::handleMy_p_at_offset_i_assign_0(
-	ExecutionState &state,
-	KInstruction *target,
-	std::vector<ref<Expr> > &arguments)
-{
-	/****************************************************************************/
-	/* [1] Make sure p_at_offset_i_assign_0 uses the SMT-formula implementation */
-	/****************************************************************************/
-	llvm::errs() << "*****************************************************" << "\n";
-	llvm::errs() << "* [0] p_at_offset_i_assign_0 formula implementation *" << "\n";
-	llvm::errs() << "*****************************************************" << "\n";
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+	// llvm::Value *value2 = callInst->getArgOperand(2);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+	// std::string varName2 = value2->getName().str();
+
+	/****************************************************************/
+	/* [4] Apply the relevant semantics transformer:                */
+	/*     for p[i] := c, this involves only setting the following: */
+	/*     serial(p) := 0                                           */
+	/*     that is, a non existing serial                           */
+	/****************************************************************/
+	// state.oren_serials[varName] = 0;
+
+	/***********************************/
+	/* [5] For debug purposes only ... */
+	/***********************************/
+	llvm::errs() << varName0 << "\n";
+	llvm::errs() << varName1 << "\n";
+	// llvm::errs() << varName2 << "\n";
 }
 
 void SpecialFunctionHandler::handleMyMalloc(
@@ -1241,7 +1281,6 @@ void SpecialFunctionHandler::handleMyAtoi(
 	/* [6] Use many helper functions to assemble the overall formula */
 	/*     for MyAtoi. Use maxStringLength as a parameter ...        */
 	/*****************************************************************/
-	int david = 299;
 	ref<Expr> MyAtoiFormula =
 	MyAtoiFormula_for_strings_with_length_leq(maxStringLength);
 	
@@ -1252,46 +1291,6 @@ void SpecialFunctionHandler::handleMyAtoi(
 		target, 
 		state,
 		MyAtoiFormula);
-	
-#	if 0
-	executor.bindLocal(
-		target, 
-		state,
-		AddExpr::create
-		(
-			MulExpr::create
-			(
-				SubExpr::create
-				(
-					SExtExpr::create
-					(
-						os->read(offset_of_p_within_MISHMISH,Expr::Int8),
-						Expr::Int32
-					),
-					ConstantExpr::create('0',Expr::Int32)
-				),
-				ConstantExpr::create(10,Expr::Int32)
-			),
-			SubExpr::create
-			(
-				SExtExpr::create
-				(
-					os->read
-					(
-						AddExpr::create
-						(
-							offset_of_p_within_MISHMISH,
-							ConstantExpr::create(1,offset_of_p_within_MISHMISH->getWidth())
-						),
-						Expr::Int8
-					),
-					Expr::Int32
-				),
-				ConstantExpr::create('0',Expr::Int32)
-			)
-		)
-	);
-#	endif
 }
 
 void SpecialFunctionHandler::handleGetValue(ExecutionState &state,
