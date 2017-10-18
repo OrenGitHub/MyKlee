@@ -1090,7 +1090,77 @@ void SpecialFunctionHandler::handleMyStrlen(
 void SpecialFunctionHandler::handleMyStrcpy(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
+	std::vector<ref<Expr> > &arguments)
+{
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string p = state.varNames[varName0];
+	std::string q = state.varNames[varName1];
+
+	/***************************************************************************/
+	/* [5] Apply the relevant semantics transformer:                           */
+	/*     for strcpy(p,q) this involves the following:                        */
+	/*                                                                         */
+	/*     -----------------------------------------------------               */
+	/*     -------------------- DEFINITIONS --------------------               */
+	/*     -----------------------------------------------------               */
+	/*                                                                         */
+	/*     offset_p := offset(p);                                              */
+	/*     serial_p := serial(p);                                              */
+	/*     last     := last(serial_p);                                         */
+	/*     AB_p_tag := AB_{serial_p,last_p}                                    */
+	/*     AB_p     := Substr(AB,offset_q,Strlen(AB) - offset_p)               */
+	/*                                                                         */
+	/*     offset_q := offset(q);                                              */
+	/*     serial_q := serial(q);                                              */
+	/*     last     := last(serial_q);                                         */
+	/*     AB_q_tag := AB_{serial_q,last_q}                                    */
+	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag)-offset_q)     */
+	/*     AB_q_C   := ite((= -1 indexof(AB_q,"\x00"))                         */
+	/*                     AB_q                                                */
+	/*                     Substr(AB_q,0,indexof(AB_q,"\x00"))                 */
+	/*                                                                         */
+	/*     -----------------------------------------------------               */
+	/*     -----------------------------------------------------               */
+	/*     -----------------------------------------------------               */
+	/*                                                                         */
+	/*     if (!= AB_q_C AB_q)                                    { error(); } */
+	/*     else if (Strlen(AB_q_C) > (size(serial_p) - offset_p)) { error(); } */
+	/*     else                                                                */
+	/*     {                                                                   */
+	/*         Cons.add(= AB_q_C Substr(AB_{serial_p,last_p+1}                 */
+	/*     }                                                                   */
+	/*                                                                         */
+	/***************************************************************************/
+	int offset_p = state.ab_offset[p];
+	int serial_p = state.ab_serial[p];
+	int last_p   = state.ab_last[serial_p];
+	
+
+	/***********************************/
+	/* [5] For debug purposes only ... */
+	/***********************************/
+	llvm::errs() << varName0 << "\n";
+	llvm::errs() << varName1 << "\n";
+}
 
 void SpecialFunctionHandler::handleMyConstStringAssign(
 	ExecutionState &state,
@@ -1143,7 +1213,7 @@ void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	/*     serial(p) := 0                            */
 	/*     that is, a non existing serial            */
 	/*************************************************/
-	state.oren_serials[varName] = 0;
+	state.ab_serial[varName] = 0;
 
 	/***********************************/
 	/* [5] For debug purposes only ... */

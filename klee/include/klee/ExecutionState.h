@@ -190,18 +190,29 @@ public:
 	/* ------------------------ */
 	/* That is, their names ... */
 	/****************************/
-	std::set<std::string> oren_svars;
+	std::set<std::string> svars;
 
 	/***************************************************/
-	/* serials : svars ------> N                       */
-	/* serials = the way to identify abstract buffers  */
+	/* serial : svars ------> N                        */
+	/* serial = the way to identify abstract buffers   */
 	/* ----------------------------------------------  */
 	/* ----------------------------------------------  */
 	/* ----------------------------------------------  */
 	/* That is, each abstract buffer is represented by */
 	/* a unique integer ...                            */
 	/***************************************************/
-	std::map<std::string,int> oren_serials;
+	std::map<std::string,int> ab_serial;
+
+	/*************************************************************/
+	/* offset : svars ------> N                                  */
+	/* offset = the offset of an svar inside its abstract buffer */
+	/* --------------------------------------------------------  */
+	/* --------------------------------------------------------  */
+	/* --------------------------------------------------------  */
+	/* This is over simplified for now -- the offset should      */
+	/* later be a ref<Expr> ...                                  */
+	/*************************************************************/
+	std::map<std::string,int> ab_offset;
 
 	/*********************************************************/
 	/* size : AbstractBuffers ------> N+                     */
@@ -211,7 +222,7 @@ public:
 	/* That is, the size of each abstract buffer, referenced */
 	/* by its serial number                                  */
 	/*********************************************************/
-	std::map<int,int> oren_size;
+	std::map<int,int> ab_size;
 
 	/*********************************************************/
 	/* last : AbstractBuffers ------> N                      */
@@ -220,7 +231,7 @@ public:
 	/* ----------------------------------------------------- */
 	/* That is, the last version of an abstract buffer       */
 	/*********************************************************/
-	std::map<int,int> oren_last;
+	std::map<int,int> ab_last;
 
 private:
   ExecutionState() : ptreeNode(0) {}
