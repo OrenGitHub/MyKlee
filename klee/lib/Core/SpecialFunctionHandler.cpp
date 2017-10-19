@@ -38,6 +38,7 @@
 #include "llvm/IR/DataLayout.h"
 #endif
 
+#include "llvm/IR/Constants.h"
 #include <errno.h>
 
 using namespace llvm;
@@ -1195,16 +1196,24 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	/***********************************************/
 	/* [4] Extract the name of the input arguments */
 	/***********************************************/
-	varName0    = value0->getName();
-	varName1    = value1Gep->getName();
-	varName1Tag = value1Gep->getOperand(0)->getName();
+	varName0      = value0->getName();
+	varName1      = value1Gep->getName();
+	varName1Tag   = value1Gep->getOperand(0)->getName();
 
-	/*********************************************/
-	/* [5] Print the name of the input arguments */
-	/*********************************************/
-	llvm::errs() << "varName0    = " << varName0    << "\n";
-	llvm::errs() << "varName1    = " << varName1    << "\n";
-	llvm::errs() << "varName1Tag = " << varName1Tag << "\n";
+	/**********************************************/
+	/* [5] Extract the actual underlying c string */
+	/**********************************************/
+	llvm::GlobalVariable    *actualCStringVar     = (llvm::GlobalVariable    *) (value1Gep->getOperand(0));
+	llvm::ConstantDataArray *actualCStringVarTag  = (llvm::ConstantDataArray *) (actualCStringVar->getInitializer());
+	std::string actualCStringContent              = actualCStringVarTag->getAsCString();
+
+	/***********************************************************************/
+	/* [6] Print the name of the input arguments + actual c string content */
+	/***********************************************************************/
+	llvm::errs() << "varName0             = " << varName0             << "\n";
+	llvm::errs() << "varName1             = " << varName1             << "\n";
+	llvm::errs() << "varName1Tag          = " << varName1Tag          << "\n";
+	llvm::errs() << "actualCStringContent = " << actualCStringContent << "\n";
 
 	/*********************************************/
 	/* [2] Extract the all three input arguments */
