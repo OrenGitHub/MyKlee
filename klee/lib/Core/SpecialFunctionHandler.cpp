@@ -1215,63 +1215,44 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	llvm::errs() << "varName1Tag          = " << varName1Tag          << "\n";
 	llvm::errs() << "actualCStringContent = " << actualCStringContent << "\n";
 
-	/*********************************************/
-	/* [2] Extract the all three input arguments */
-	/*********************************************/
-	// llvm::Value *value0 = callInst->getArgOperand(0);
-	// llvm::Value *value1 = callInst->getArgOperand(1);
-		
-	/********************************************/
-	/* [3] Take the name of the input arguments */
-	/********************************************/
-	// std::string varName0 = value0->getName().str();
-	// std::string varName1 = ((llvm::GetElementPtrInst *) value1)->getOperand(0)->getName();
-
-	/*****************************************************/
-	/* [4] Go back to the original local variables names */
-	/*****************************************************/
-	//std::string p = state.varNames[varName0];
-	//std::string q = state.varNames[varName1];
-
 	/***************************************************************************/
-	/* [5] Apply the relevant semantics transformer:                           */
-	/*     for strcpy(p,q) this involves the following:                        */
+	/* [7] Apply the relevant semantics transformer:                           */
+	/*     for p := "someConstString" -- this involves the following:          */
 	/*                                                                         */
 	/*     -----------------------------------------------------               */
 	/*     -------------------- DEFINITIONS --------------------               */
 	/*     -----------------------------------------------------               */
 	/*                                                                         */
-	/*     offset_p := offset(p);                                              */
-	/*     serial_p := serial(p);                                              */
-	/*     last     := last(serial_p);                                         */
-	/*     AB_p_tag := AB_{serial_p,last_p}                                    */
-	/*     AB_p     := Substr(AB,offset_q,Strlen(AB) - offset_p)               */
-	/*                                                                         */
-	/*     offset_q := offset(q);                                              */
-	/*     serial_q := serial(q);                                              */
-	/*     last     := last(serial_q);                                         */
-	/*     AB_q_tag := AB_{serial_q,last_q}                                    */
-	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag)-offset_q)     */
-	/*     AB_q_C   := ite((= -1 indexof(AB_q,"\x00"))                         */
-	/*                     AB_q                                                */
-	/*                     Substr(AB_q,0,indexof(AB_q,"\x00"))                 */
+	/*     serial_p := new serial                                              */
 	/*                                                                         */
 	/*     -----------------------------------------------------               */
 	/*     -----------------------------------------------------               */
 	/*     -----------------------------------------------------               */
 	/*                                                                         */
-	/*     if (!= AB_q_C AB_q)                                    { error(); } */
-	/*     else if (Strlen(AB_q_C) > (size(serial_p) - offset_p)) { error(); } */
-	/*     else                                                                */
-	/*     {                                                                   */
-	/*         Cons.add(= AB_q_C Substr(AB_{serial_p,last_p+1}                 */
-	/*     }                                                                   */
+	/*     serial(p)      := serial_p                                          */
+	/*     offset(p)      := 0                                                 */
+	/*     last(serial_p) := 0                                                 */
+	/*                                                                         */
+	/*     CONS.add(= AB_{serial_p,0} THE-CONSTANT-STRING)                     */
 	/*                                                                         */
 	/***************************************************************************/
-	//int offset_p = state.ab_offset[p];
-	//int serial_p = state.ab_serial[p];
-	//int last_p   = state.ab_last[serial_p];
-	
+	/******************************************************/
+	/* Remember we only have OUR local variables,         */
+	/* and currently ignore llvm temporary variable names */
+	/******************************************************/
+	std::string p = state.varNames[varName0];
+
+	/*************************/
+	/* Allocate a new serial */
+	/*************************/
+	int serial_p  = ++state.numABSerials;
+
+	/******************************************/
+	/* Update the state's data structures ... */
+	/******************************************/
+	state.ab_serial[p] = serial_p;
+	state.ab_offset[p]        = 0;
+	state.ab_last[serial_p]   = 0;
 
 	/***********************************/
 	/* [6] For debug purposes only ... */

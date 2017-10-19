@@ -57,7 +57,6 @@ lib/Makefile
 lib/Module/
 lib/README.txt
 lib/SMT/
-lib/Solver/
 lib/Support/
 runtime/
 scripts/
