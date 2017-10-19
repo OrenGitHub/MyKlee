@@ -1156,7 +1156,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	
 
 	/***********************************/
-	/* [5] For debug purposes only ... */
+	/* [6] For debug purposes only ... */
 	/***********************************/
 	llvm::errs() << varName0 << "\n";
 	llvm::errs() << varName1 << "\n";
@@ -1165,7 +1165,111 @@ void SpecialFunctionHandler::handleMyStrcpy(
 void SpecialFunctionHandler::handleMyConstStringAssign(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
+	std::vector<ref<Expr> > &arguments)
+{
+	llvm::Value *value0;
+	llvm::Value *value1;
+
+	std::string varName0;
+	std::string varName1;
+	std::string varName1Tag;
+
+	llvm::GetElementPtrInst * value1Gep;
+
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+	
+	/***************************************/
+	/* [2] Extract the two input arguments */
+	/***************************************/
+	value0 = callInst->getArgOperand(0);
+	value1 = callInst->getArgOperand(1);
+
+	/******************/
+	/* [3] Gep it !!! */
+	/******************/
+	value1Gep = ((llvm::GetElementPtrInst *) value1);
+
+	/***********************************************/
+	/* [4] Extract the name of the input arguments */
+	/***********************************************/
+	varName0    = value0->getName();
+	varName1    = value1Gep->getName();
+	varName1Tag = value1Gep->getOperand(0)->getName();
+
+	/*********************************************/
+	/* [5] Print the name of the input arguments */
+	/*********************************************/
+	llvm::errs() << "varName0    = " << varName0    << "\n";
+	llvm::errs() << "varName1    = " << varName1    << "\n";
+	llvm::errs() << "varName1Tag = " << varName1Tag << "\n";
+
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	// llvm::Value *value0 = callInst->getArgOperand(0);
+	// llvm::Value *value1 = callInst->getArgOperand(1);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	// std::string varName0 = value0->getName().str();
+	// std::string varName1 = ((llvm::GetElementPtrInst *) value1)->getOperand(0)->getName();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	//std::string p = state.varNames[varName0];
+	//std::string q = state.varNames[varName1];
+
+	/***************************************************************************/
+	/* [5] Apply the relevant semantics transformer:                           */
+	/*     for strcpy(p,q) this involves the following:                        */
+	/*                                                                         */
+	/*     -----------------------------------------------------               */
+	/*     -------------------- DEFINITIONS --------------------               */
+	/*     -----------------------------------------------------               */
+	/*                                                                         */
+	/*     offset_p := offset(p);                                              */
+	/*     serial_p := serial(p);                                              */
+	/*     last     := last(serial_p);                                         */
+	/*     AB_p_tag := AB_{serial_p,last_p}                                    */
+	/*     AB_p     := Substr(AB,offset_q,Strlen(AB) - offset_p)               */
+	/*                                                                         */
+	/*     offset_q := offset(q);                                              */
+	/*     serial_q := serial(q);                                              */
+	/*     last     := last(serial_q);                                         */
+	/*     AB_q_tag := AB_{serial_q,last_q}                                    */
+	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag)-offset_q)     */
+	/*     AB_q_C   := ite((= -1 indexof(AB_q,"\x00"))                         */
+	/*                     AB_q                                                */
+	/*                     Substr(AB_q,0,indexof(AB_q,"\x00"))                 */
+	/*                                                                         */
+	/*     -----------------------------------------------------               */
+	/*     -----------------------------------------------------               */
+	/*     -----------------------------------------------------               */
+	/*                                                                         */
+	/*     if (!= AB_q_C AB_q)                                    { error(); } */
+	/*     else if (Strlen(AB_q_C) > (size(serial_p) - offset_p)) { error(); } */
+	/*     else                                                                */
+	/*     {                                                                   */
+	/*         Cons.add(= AB_q_C Substr(AB_{serial_p,last_p+1}                 */
+	/*     }                                                                   */
+	/*                                                                         */
+	/***************************************************************************/
+	//int offset_p = state.ab_offset[p];
+	//int serial_p = state.ab_serial[p];
+	//int last_p   = state.ab_last[serial_p];
+	
+
+	/***********************************/
+	/* [6] For debug purposes only ... */
+	/***********************************/
+	//llvm::errs() << varName0 << "\n";
+	//llvm::errs() << varName1 << "\n";	
+}
 
 void SpecialFunctionHandler::handleMyStrcmp(
 	ExecutionState &state,
@@ -1266,12 +1370,47 @@ void SpecialFunctionHandler::handleMyMalloc(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	/**************************************************************/
-	/* [1] Make sure MyMalloc uses the SMT-formula implementation */
-	/**************************************************************/
-	llvm::errs() << "***************************************" << "\n";
-	llvm::errs() << "* [0] MyMalloc formula implementation *" << "\n";
-	llvm::errs() << "***************************************" << "\n";		
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string p = state.varNames[varName0];
+	std::string size = state.varNames[varName1];
+
+	/***************************************************************************/
+	/* [5] Apply the relevant semantics transformer:                           */
+	/*     for p = malloc(size) this involves the following:                   */
+	/*                                                                         */
+	/*     serial(p) = some-new-serial                                         */
+	/*     last(serial(p)) = 0                                                 */
+	/*     offset(p) = 0                                                       */
+	/*                                                                         */
+	/***************************************************************************/
+	state.ab_serial[p] = ++state.numABSerials;
+	state.ab_last[state.ab_serial[p]] = 0;
+	state.ab_offset[p] = 0;
+
+	/***********************************/
+	/* [6] For debug purposes only ... */
+	/***********************************/
+	llvm::errs() << p << "\n";
+	llvm::errs() << size << "\n";
 }
 
 void SpecialFunctionHandler::handleMyStrchr(

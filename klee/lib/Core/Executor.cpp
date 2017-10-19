@@ -2418,6 +2418,9 @@ OISH_FINISHED_HANDLING_ATOI:
     /**************************************/
     llvm::GetElementPtrInst *gepi = (llvm::GetElementPtrInst *) i;
 
+	std::string oren = gepi->getOperand(0)->getName();
+	llvm::errs() << "gep pointer name = " << oren << "\n";
+
     /*****************************/
     /* [1.a] indices extractions */
     /*****************************/

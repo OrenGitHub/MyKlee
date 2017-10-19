@@ -165,6 +165,8 @@ public:
 
 public:
 
+	int numABSerials=0;
+
 	/****************************************/
 	/* dummy integer just for debugging ... */
 	/****************************************/
