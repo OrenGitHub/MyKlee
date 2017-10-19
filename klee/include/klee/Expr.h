@@ -131,8 +131,15 @@ public:
     // Bit
     Not,
 
-    // All subsequent kinds are binary.
+	// String
+	Str_Const,
+	Str_CharAt,
+	Str_FirstIdxOf,
+	Str_Substr,
+	Str_Atoi,
+	Str_Itoa,
 
+    // All subsequent kinds are binary.
     // Arithmetic
     Add,
     Sub,
