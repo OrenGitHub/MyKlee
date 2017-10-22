@@ -121,6 +121,16 @@ private:
   Z3ASTHandle bvExtract(Z3ASTHandle expr, unsigned top, unsigned bottom);
   Z3ASTHandle eqExpr(Z3ASTHandle a, Z3ASTHandle b);
 
+  // string operations
+  Z3ASTHandle strLength(Z3ASTHandle s);
+  Z3ASTHandle strConst(const char *value);
+  Z3ASTHandle strCompare(Z3ASTHandle s1,Z3ASTHandle s2);
+  Z3ASTHandle strCharAt(Z3ASTHandle s,Z3ASTHandle index);
+  Z3ASTHandle strFirstIdxOf(Z3ASTHandle haystack,Z3ASTHandle needle);
+  Z3ASTHandle strAtoi(Z3ASTHandle s){Z3ASTHandle result;return result;}
+  Z3ASTHandle strItoa(Z3ASTHandle s){Z3ASTHandle result;return result;}
+  Z3ASTHandle strSubstring(Z3ASTHandle s,Z3ASTHandle start,Z3ASTHandle length);
+
   // logical left and right shift (not arithmetic)
   Z3ASTHandle bvLeftShift(Z3ASTHandle expr, unsigned shift);
   Z3ASTHandle bvRightShift(Z3ASTHandle expr, unsigned shift);
@@ -168,6 +178,12 @@ private:
   Z3ASTHandle buildArray(const char *name, unsigned indexWidth,
                          unsigned valueWidth);
 
+  /************************************************/
+  // string ... OISH ... copy-cat the array stuff
+  /************************************************/
+  Z3SortHandle getSeqSort(void);
+  Z3ASTHandle buildString(const char *name);
+                         
   Z3SortHandle getBvSort(unsigned width);
   Z3SortHandle getArraySort(Z3SortHandle domainSort, Z3SortHandle rangeSort);
   bool autoClearConstructCache;

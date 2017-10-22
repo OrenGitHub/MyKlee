@@ -138,6 +138,7 @@ public:
 	Str_Substr,
 	Str_Atoi,
 	Str_Itoa,
+	Str_Compare,
 
     // All subsequent kinds are binary.
     // Arithmetic
@@ -794,7 +795,39 @@ private:
   NotExpr(const ref<Expr> &e) : expr(e) {}
 };
 
+// strings by OISH
 
+/****************/
+/* StrConstExpr */
+/****************/
+class StrExpr : public Expr {
+public:
+	int OrenIshShalom;
+};
+
+class StrConstExpr : public StrExpr {
+public:
+	char value[256];
+};
+
+class StrSubstrExpr : public StrExpr {
+public:
+	ref<Expr> s;
+	ref<Expr> startIndex;
+	ref<Expr> Length;
+};
+
+class StrCmpExpr : public StrExpr {
+public:
+	ref<Expr> s1;
+	ref<Expr> s2;
+};
+
+class StrFirstIndexOfExpr : public StrExpr {
+public:
+	ref<Expr> haystack;
+	ref<Expr> needle;
+};
 
 // Casting
 

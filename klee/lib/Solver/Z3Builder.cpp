@@ -98,6 +98,36 @@ Z3ASTHandle Z3Builder::buildArray(const char *name, unsigned indexWidth,
   return Z3ASTHandle(Z3_mk_const(ctx, s, t), ctx);
 }
 
+/*******************************************/
+/* buildString together with getStringSort */
+/*******************************************/
+/*****************/
+/* getStringSort */
+/*****************/
+Z3SortHandle Z3Builder::getSeqSort(void)
+{
+	return Z3SortHandle(Z3_mk_seq_sort(ctx,NULL),ctx);
+}
+
+/***************/
+/* buildString */
+/***************/
+Z3ASTHandle Z3Builder::buildString(const char *name)
+{
+	Z3SortHandle t = getSeqSort();
+
+	Z3_symbol s = Z3_mk_string_symbol(
+		ctx,
+		const_cast<char *>(name));
+		
+	return Z3ASTHandle(
+		Z3_mk_const(
+			ctx,
+			s,
+			t),
+		ctx);
+}
+
 Z3ASTHandle Z3Builder::getTrue() { return Z3ASTHandle(Z3_mk_true(ctx), ctx); }
 
 Z3ASTHandle Z3Builder::getFalse() { return Z3ASTHandle(Z3_mk_false(ctx), ctx); }
@@ -546,6 +576,15 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
       return bvSignExtend(src, *width_out);
     }
   }
+
+  // String
+  case Expr::Str_Atoi:       {Z3ASTHandle result;return result;}
+  case Expr::Str_Itoa:       {Z3ASTHandle result;return result;}
+  case Expr::Str_Const:      {Z3ASTHandle result;return result;}
+  case Expr::Str_CharAt:     {Z3ASTHandle result;return result;}
+  case Expr::Str_Substr:     {Z3ASTHandle result;return result;}
+  case Expr::Str_Compare:    {Z3ASTHandle result;return result;}
+  case Expr::Str_FirstIdxOf: {Z3ASTHandle result;return result;}
 
   // Arithmetic
   case Expr::Add:
