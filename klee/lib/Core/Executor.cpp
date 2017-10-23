@@ -816,6 +816,7 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
   if (ROOTS == 484)
   {
   	int moish = 777;
+  	if (moish > 900){llvm::errs() << "\n";}
   }
   bool success = solver->evaluate(current, condition, res);
   solver->setTimeout(0);
@@ -931,6 +932,8 @@ Executor::fork(ExecutionState &current, ref<Expr> condition, bool isInternal) {
   } else {
     TimerStatIncrementer timer(stats::forkTime);
     ExecutionState *falseState, *trueState = &current;
+    
+    // OISH ... it seems like the operator= does all the needed copying (???)
 
     ++stats::forks;
 
@@ -1649,7 +1652,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
       {
         char s[1024]={0};
         strcpy(s,bi->getName().str().c_str());
-        int i = strlen(s);
+        // int i = strlen(s);
       }
 
       // NOTE: There is a hidden dependency here, markBranchVisited
@@ -1827,7 +1830,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
     	// assert(0);
     	// exit(0);
     	// goto OISH_FINISHED_HANDLING_ATOI;
-    	int d=666;
+    	// int d=666;
     }
 
     /**********************************/
@@ -1839,7 +1842,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
     	// assert(0);
     	// exit(0);
     	// goto OISH_FINISHED_HANDLING_ATOI;
-    	int d=777;
+    	// int d=777;
     }
 
     /**********************************/
@@ -1851,7 +1854,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
     	// assert(0);
     	// exit(0);
     	// goto OISH_FINISHED_HANDLING_ATOI;
-    	int d=888;
+    	// int d=888;
     }
     
     // evaluate arguments
@@ -1946,8 +1949,8 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
     }
     break;
   }
-OISH_FINISHED_HANDLING_ATOI:
-	break;  
+//OISH_FINISHED_HANDLING_ATOI:
+//	break;  
   case Instruction::PHI: {
 #if LLVM_VERSION_CODE >= LLVM_VERSION(3, 0)
     ref<Expr> result = eval(ki, state.incomingBBIndex, state).value;
@@ -2128,7 +2131,7 @@ OISH_FINISHED_HANDLING_ATOI:
       if (const MemoryMap::value_type *res = state.addressSpace.objects.lookup_previous(&hack))
       {
         const MemoryObject *mo = res->first;
-        int mosize = mo->size;
+        // int mosize = mo->size;
         // llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
         strcpy(who_allocated_left,mo->who_allocated_me);
       }
@@ -2149,7 +2152,7 @@ OISH_FINISHED_HANDLING_ATOI:
       if (const MemoryMap::value_type *res = state.addressSpace.objects.lookup_previous(&hack))
       {
         const MemoryObject *mo = res->first;
-        int mosize = mo->size;
+        // int mosize = mo->size;
         // llvm::errs() << "AND THE MEMORY TYPE IS: ... " << mo->who_allocated_me << " !!! \n";
         strcpy(who_allocated_right,mo->who_allocated_me);
       }
@@ -2337,6 +2340,7 @@ OISH_FINISHED_HANDLING_ATOI:
     /*****************************/
     if (CI)
     {
+    	if (orenvalue > 0) {llvm::errs() << "\n";}
     	orenvalue = CI->getZExtValue();
 	    //llvm::errs()                           <<
 	    //"[OISH] [LOAD ]: "                     <<
@@ -2384,7 +2388,7 @@ OISH_FINISHED_HANDLING_ATOI:
     	orenvalue = CI->getZExtValue();
     	if (orenvalue == '7')
     	{
-    		int ddd=800;
+    		// int ddd=800;
     		llvm::errs() << "[OISH] [STORE]: " << storei->getPointerOperand()->getName() << "\n";
     	}
 	    //llvm::errs()                           <<

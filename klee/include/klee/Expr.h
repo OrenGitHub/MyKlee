@@ -803,11 +803,30 @@ private:
 class StrExpr : public Expr {
 public:
 	int OrenIshShalom;
+public:
+	virtual Kind      getKind()                 const {return   Expr::Str_Atoi;}	
+	virtual Width     getWidth()                const {return   750;}	
+	virtual unsigned  getNumKids()              const {return   750;}	
+	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
 };
 
 class StrConstExpr : public StrExpr {
 public:
 	char value[256];
+};
+
+class StrEqExpr : public StrExpr {
+public:
+	std::string s1;
+	std::string s2;
+	
+public:
+	StrEqExpr(std::string s1,std::string s2)
+    {
+    	this->s1 = s1;
+    	this->s2 = s2;
+    }
 };
 
 class StrSubstrExpr : public StrExpr {
@@ -1054,7 +1073,7 @@ public:
   static ref<ConstantExpr> alloc(const llvm::APFloat &f) {
     return alloc(f.bitcastToAPInt());
   }
-
+  
   static ref<ConstantExpr> alloc(uint64_t v, Width w) {
     return alloc(llvm::APInt(w, v));
   }

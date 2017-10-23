@@ -177,16 +177,22 @@ private:
 
   Z3ASTHandle buildArray(const char *name, unsigned indexWidth,
                          unsigned valueWidth);
+                         
+  Z3SortHandle getBvSort(unsigned width);
+  Z3SortHandle getArraySort(Z3SortHandle domainSort, Z3SortHandle rangeSort);
+  bool autoClearConstructCache;
+
+public:
 
   /************************************************/
   // string ... OISH ... copy-cat the array stuff
   /************************************************/
   Z3SortHandle getSeqSort(void);
+
+  /************************************************/
+  // string ... OISH ... copy-cat the array stuff
+  /************************************************/
   Z3ASTHandle buildString(const char *name);
-                         
-  Z3SortHandle getBvSort(unsigned width);
-  Z3SortHandle getArraySort(Z3SortHandle domainSort, Z3SortHandle rangeSort);
-  bool autoClearConstructCache;
 
 public:
   Z3_context ctx;

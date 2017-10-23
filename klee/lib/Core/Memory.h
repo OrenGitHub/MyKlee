@@ -114,7 +114,7 @@ public:
           llvm::errs() << MoishFrenkel << "\n";
       }
   
-      static int numcalls=0;
+      // static int numcalls=0;
       const llvm::Instruction *orenisimo = (const llvm::Instruction *) _allocSite;
 
   	  strcpy(who_allocated_me,"UNINITIALIZED MEMORY");

@@ -1151,9 +1151,9 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*     }                                                                   */
 	/*                                                                         */
 	/***************************************************************************/
-	int offset_p = state.ab_offset[p];
-	int serial_p = state.ab_serial[p];
-	int last_p   = state.ab_last[serial_p];
+	// int offset_p = state.ab_offset[p];
+	// int serial_p = state.ab_serial[p];
+	// int last_p   = state.ab_last[serial_p];
 	
 
 	/***********************************/
@@ -1254,11 +1254,40 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	state.ab_offset[p]        = 0;
 	state.ab_last[serial_p]   = 0;
 
-	/***********************************/
-	/* [6] For debug purposes only ... */
-	/***********************************/
-	//llvm::errs() << varName0 << "\n";
-	//llvm::errs() << varName1 << "\n";	
+	char ABserialNumber[128];
+	char ABversionNumber[128];
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string ABname          = "AB";
+	std::string ABserial        = "_serial_";
+	std::string ABversion       = "_version_";
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset(ABserialNumber, 0,sizeof(ABversionNumber));
+	memset(ABversionNumber,0,sizeof(ABversionNumber));
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	sprintf(ABserialNumber, "%d",serial_p);
+	sprintf(ABversionNumber,"%d",0);
+
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string name =
+		ABname          +
+		ABserial        +
+		ABserialNumber  +
+		ABversion       +
+		ABversionNumber;
+
+	/***************************/
+	/* Add relevant constraint */
+	/***************************/
+	StrEqExpr *e = new StrEqExpr(name,actualCStringContent);
+	state.constraints.addConstraint(e);
 }
 
 void SpecialFunctionHandler::handleMyStrcmp(
