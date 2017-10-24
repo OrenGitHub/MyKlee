@@ -1126,15 +1126,15 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*                                                                         */
 	/*     offset_p := offset(p);                                              */
 	/*     serial_p := serial(p);                                              */
-	/*     last     := last(serial_p);                                         */
-	/*     AB_p_tag := AB_{serial_p,last_p}                                    */
-	/*     AB_p     := Substr(AB,offset_q,Strlen(AB) - offset_p)               */
+	/*     last_p   := last(serial_p);                                         */
+	/*     AB_p     := AB_{serial_p,last_p}                                    */
+	/*     AB_p_tag := Substr(AB_p,offset_p,Strlen(AB_p) - offset_p)           */
 	/*                                                                         */
 	/*     offset_q := offset(q);                                              */
 	/*     serial_q := serial(q);                                              */
-	/*     last     := last(serial_q);                                         */
+	/*     last_q   := last(serial_q);                                         */
 	/*     AB_q_tag := AB_{serial_q,last_q}                                    */
-	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag)-offset_q)     */
+	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag) - offset_q)   */
 	/*     AB_q_C   := ite((= -1 indexof(AB_q,"\x00"))                         */
 	/*                     AB_q                                                */
 	/*                     Substr(AB_q,0,indexof(AB_q,"\x00"))                 */
@@ -1151,16 +1151,123 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*     }                                                                   */
 	/*                                                                         */
 	/***************************************************************************/
-	// int offset_p = state.ab_offset[p];
-	// int serial_p = state.ab_serial[p];
-	// int last_p   = state.ab_last[serial_p];
+	int offset_p = state.ab_offset[p];
+	int serial_p = state.ab_serial[p];
+	int last_p   = state.ab_last[serial_p];
 	
+	char AB_p_serialNumber[128];
+	char AB_p_versionNumber[128];
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_p_prefix  = "AB";
+	std::string AB_p_serial  = "_serial_";
+	std::string AB_p_version = "_version_";
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset(AB_p_serialNumber, 0,sizeof(AB_p_versionNumber));
+	memset(AB_p_versionNumber,0,sizeof(AB_p_versionNumber));
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	sprintf(AB_p_serialNumber, "%d",serial_p);
+	sprintf(AB_p_versionNumber,"%d",last_p);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_p_name =
+		AB_p_prefix          +
+		AB_p_serial          +
+		AB_p_serialNumber    +
+		AB_p_version         +
+		AB_p_versionNumber;
 
-	/***********************************/
-	/* [6] For debug purposes only ... */
-	/***********************************/
-	llvm::errs() << varName0 << "\n";
-	llvm::errs() << varName1 << "\n";
+	/************************************************************************/
+	/************************************************************************/
+	/************************************************************************/
+	/************************ Now the same for q ... ************************/
+	/************************************************************************/
+	/************************************************************************/
+	/************************************************************************/
+	int offset_q = state.ab_offset[q];
+	int serial_q = state.ab_serial[q];
+	int last_q   = state.ab_last[serial_q];
+	
+	char AB_q_serial__name[128];
+	char AB_q_version_name[128];
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset( AB_q_serial__name,0,sizeof(AB_q_serial_name));
+	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
+	sprintf(AB_q_serial__name,"%s_%d","_serial_", serial_q);
+	sprintf(AB_q_version_name,"%s_%d","_version_",last_q);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_q_name="AB"+AB_q_serial_name+AB_q_version_name;
+
+	ref<Expr> error_refExpr;
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/
+	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
+	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
+	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
+	ref<Expr> offset_q_refExpr     = ConstantExpr::create(offset_q,Expr::Int32);
+	ref<Expr> offset_p_refExpr     = ConstantExpr::create(offset_p,Expr::Int32);
+	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
+	ref<Expr> AB_p_length_refExpr  = StrLengthExpr::create(AB_p_refExpr);
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> AB_q_offset_refExpr  =
+	StrSubstrExpr::create(
+		AB_q_refExpr,
+		offset_q_refExpr,
+		SubExpr::create(
+			AB_q_length_refExpr,
+			offset_q_refExpr));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
+	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> actual_q_refExpr     =
+	StrSubstrExpr::create(
+		AB_q_offset_refExpr,
+		ConstantExpr::create(0,Expr::Int32),
+		q_length_plus_1);
+
+	/*********************************/
+	/* Finally the actual constraint */
+	/*********************************/
+	ref<Expr> e = SelectExpr::create(
+		Is_q_not_NULL_terminated,
+		error_refExpr,
+		SelectExpr::create(
+			GtExpr::create(
+				q_length_plus_1,
+				SubbExpr::create(
+					AB_p_length_refExpr,
+					offset_p_refExpr)),
+			error_refExpr,
+			StrEqExpr::create(
+				actual_q_refExpr,
+				StrSubstrExpr::create(
+					AB_p_refExpr,
+					offset_p_refExpr,
+					q_length_plus_1))));
+		
+	/*****************************/
+	/* Add the actual constraint */
+	/*****************************/
+	state.constraints.addConstraint(e);
 }
 
 void SpecialFunctionHandler::handleMyConstStringAssign(
