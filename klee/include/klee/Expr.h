@@ -142,6 +142,7 @@ public:
 	Str_Length,
 	Str_Compare,
 	Str_FirstIdxOf,
+	Str_FromBitVec8,
 
     // All subsequent kinds are binary.
     // Arithmetic
@@ -799,6 +800,65 @@ private:
 };
 
 // strings by OISH
+/*************************/
+/* StrFromBitVector8Expr */
+/*************************/
+class StrCharAtExpr : public Expr {
+public:
+	ref<Expr> s;
+	ref<Expr> i;
+
+public:
+	static ref<Expr> create(ref<Expr> s,ref<Expr> i)
+	{
+		StrCharAtExpr *e = new StrCharAtExpr;
+		e->s = s;
+		e->i = i;
+		return e;
+	}
+
+public:
+	/*************************************************************************/
+	/* There are 5 pure virtual functions in Expr, which must be implemented */
+	/* Out of those 5 functions, only 1 is truly relevant for us: getKind    */
+	/* The rest of the functions are just dummy functions to keep the        */
+	/* original klee design                                                  */
+	/*************************************************************************/	
+	virtual Kind      getKind()                 const {return   Expr::Str_CharAt;}	
+	virtual Width     getWidth()                const {return   0;}	
+	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+};
+
+/*************************/
+/* StrFromBitVector8Expr */
+/*************************/
+class StrFromBitVector8Expr : public Expr {
+public:
+	ref<Expr> someBitVec8;
+
+public:
+	static ref<Expr> create(ref<Expr> someBitVec8)
+	{
+		StrFromBitVector8Expr *e = new StrFromBitVector8Expr;
+		e->someBitVec8 = someBitVec8;
+		return e;
+	}
+
+public:
+	/*************************************************************************/
+	/* There are 5 pure virtual functions in Expr, which must be implemented */
+	/* Out of those 5 functions, only 1 is truly relevant for us: getKind    */
+	/* The rest of the functions are just dummy functions to keep the        */
+	/* original klee design                                                  */
+	/*************************************************************************/	
+	virtual Kind      getKind()                 const {return   Expr::Str_FromBitVec8;}	
+	virtual Width     getWidth()                const {return   0;}	
+	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+};
 
 /*************/
 /* StrEqExpr */
@@ -894,6 +954,34 @@ public:
 	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
 };
+
+class StrConstExpr : public Expr {
+public:
+	char value[256];
+
+public:
+	static ref<Expr> create(const char *value)
+	{
+		StrConstExpr *e = new StrConstExpr;
+		memset(e->value,0,sizeof(e->value));
+		strcpy(e->value,value);
+		return e;
+	}
+
+public:
+	/*************************************************************************/
+	/* There are 5 pure virtual functions in Expr, which must be implemented */
+	/* Out of those 5 functions, only 1 is truly relevant for us: getKind    */
+	/* The rest of the functions are just dummy functions to keep the        */
+	/* original klee design                                                  */
+	/*************************************************************************/	
+	virtual Kind      getKind()                 const {return   Expr::Str_Const;}	
+	virtual Width     getWidth()                const {return   0;}	
+	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+};
+
 
 class StrVarExpr : public Expr {
 public:
