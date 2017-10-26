@@ -1601,7 +1601,7 @@ void SpecialFunctionHandler::handleMyStringAssignWithOffset(
 	/****************************************************************************/
 	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
-	success = solver->mayBeTrue(state,e,result);
+	success = executor.solver->mayBeTrue(state,e,result);
 	if (result)
 	{
 		klee_error(
@@ -1712,7 +1712,7 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 	/****************************************************************************/
 	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
-	success = solver->mayBeTrue(state,e1,result);
+	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
 	{
 		klee_error(
@@ -1825,7 +1825,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/****************************************************************************/
 	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
-	success = solver->mayBeTrue(state,e1,result);
+	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
 	{
 		klee_error(
