@@ -1116,41 +1116,9 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	std::string p = state.varNames[varName0];
 	std::string q = state.varNames[varName1];
 
-	/***************************************************************************/
-	/* [5] Apply the relevant semantics transformer:                           */
-	/*     for strcpy(p,q) this involves the following:                        */
-	/*                                                                         */
-	/*     -----------------------------------------------------               */
-	/*     -------------------- DEFINITIONS --------------------               */
-	/*     -----------------------------------------------------               */
-	/*                                                                         */
-	/*     offset_p := offset(p);                                              */
-	/*     serial_p := serial(p);                                              */
-	/*     last_p   := last(serial_p);                                         */
-	/*     AB_p     := AB_{serial_p,last_p}                                    */
-	/*     AB_p_tag := Substr(AB_p,offset_p,Strlen(AB_p) - offset_p)           */
-	/*                                                                         */
-	/*     offset_q := offset(q);                                              */
-	/*     serial_q := serial(q);                                              */
-	/*     last_q   := last(serial_q);                                         */
-	/*     AB_q_tag := AB_{serial_q,last_q}                                    */
-	/*     AB_q     := Substr(AB_q_tag,offset_q,Strlen(AB_q_tag) - offset_q)   */
-	/*     AB_q_C   := ite((= -1 indexof(AB_q,"\x00"))                         */
-	/*                     AB_q                                                */
-	/*                     Substr(AB_q,0,indexof(AB_q,"\x00"))                 */
-	/*                                                                         */
-	/*     -----------------------------------------------------               */
-	/*     -----------------------------------------------------               */
-	/*     -----------------------------------------------------               */
-	/*                                                                         */
-	/*     if (!= AB_q_C AB_q)                                    { error(); } */
-	/*     else if (Strlen(AB_q_C) > (size(serial_p) - offset_p)) { error(); } */
-	/*     else                                                                */
-	/*     {                                                                   */
-	/*         Cons.add(= AB_q_C Substr(AB_{serial_p,last_p+1}                 */
-	/*     }                                                                   */
-	/*                                                                         */
-	/***************************************************************************/
+	/****************************************************************/
+	/* [5] Apply the relevant semantics transformer for strcpy(p,q) */
+	/****************************************************************/
 	int offset_p = state.ab_offset[p];
 	int serial_p = state.ab_serial[p];
 	int last_p   = state.ab_last[serial_p];
@@ -1199,7 +1167,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
-	memset( AB_q_serial__name,0,sizeof(AB_q_serial_name));
+	memset( AB_q_serial__name,0,sizeof(AB_q_serial__name));
 	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
 	sprintf(AB_q_serial__name,"%s_%d","_serial_", serial_q);
 	sprintf(AB_q_version_name,"%s_%d","_version_",last_q);
@@ -1251,7 +1219,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 		Is_q_not_NULL_terminated,
 		error_refExpr,
 		SelectExpr::create(
-			GtExpr::create(
+			SgtExpr::create(
 				q_length_plus_1,
 				SubbExpr::create(
 					AB_p_length_refExpr,
@@ -1393,24 +1361,501 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	/***************************/
 	/* Add relevant constraint */
 	/***************************/
-	StrEqExpr *e = new StrEqExpr(name,actualCStringContent);
+	ref<Expr> e = StrEqExpr::create(
+		StrVarExpr::create(name),
+		StrConstExpr::create(actualCStringContent));
+		
 	state.constraints.addConstraint(e);
 }
 
 void SpecialFunctionHandler::handleMyStrcmp(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
+	std::vector<ref<Expr> > &arguments)
+{
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
 
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string p = state.varNames[varName0];
+	std::string q = state.varNames[varName1];
+
+	/****************************************************************/
+	/* [5] Apply the relevant semantics transformer for strcpy(p,q) */
+	/****************************************************************/
+	int offset_p = state.ab_offset[p];
+	int serial_p = state.ab_serial[p];
+	int last_p   = state.ab_last[serial_p];
+	
+	char AB_p_serial__name[128];
+	char AB_p_version_name[128];
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset( AB_p_serial__name,0,sizeof(AB_p_serial__name));
+	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
+	sprintf(AB_p_serial__name,"%s_%d","_serial_", serial_q);
+	sprintf(AB_p_version_name,"%s_%d","_version_",last_q);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_p_name="AB"+AB_p_serial_name+AB_p_version_name;
+
+	/************************************************************************/
+	/************************************************************************/
+	/************************************************************************/
+	/************************ Now the same for q ... ************************/
+	/************************************************************************/
+	/************************************************************************/
+	/************************************************************************/
+	int offset_q = state.ab_offset[q];
+	int serial_q = state.ab_serial[q];
+	int last_q   = state.ab_last[serial_q];
+	
+	char AB_q_serial__name[128];
+	char AB_q_version_name[128];
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset( AB_q_serial__name,0,sizeof(AB_q_serial__name));
+	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
+	sprintf(AB_q_serial__name,"%s_%d","_serial_", serial_q);
+	sprintf(AB_q_version_name,"%s_%d","_version_",last_q);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_q_name="AB"+AB_q_serial_name+AB_q_version_name;
+
+	ref<Expr> error_refExpr;
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/
+	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
+	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
+	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
+	ref<Expr> offset_q_refExpr     = ConstantExpr::create(offset_q,Expr::Int32);
+	ref<Expr> offset_p_refExpr     = ConstantExpr::create(offset_p,Expr::Int32);
+	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
+	ref<Expr> AB_p_length_refExpr  = StrLengthExpr::create(AB_p_refExpr);
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> AB_p_offset_refExpr  =
+	StrSubstrExpr::create(
+		AB_p_refExpr,
+		offset_p_refExpr,
+		SubExpr::create(
+			AB_p_length_refExpr,
+			offset_p_refExpr));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> AB_q_offset_refExpr  =
+	StrSubstrExpr::create(
+		AB_q_refExpr,
+		offset_q_refExpr,
+		SubExpr::create(
+			AB_q_length_refExpr,
+			offset_q_refExpr));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> firstIdxOf_x00_in_p      = StrFirstIdxOfExpr::create(AB_p_offset_refExpr,x00_refExpr);
+	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
+	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> p_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> Is_p_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(-1,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> actual_p_refExpr     =
+	StrSubstrExpr::create(
+		AB_p_offset_refExpr,
+		ConstantExpr::create(0,Expr::Int32),
+		_length_plus_1);
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> actual_q_refExpr     =
+	StrSubstrExpr::create(
+		AB_q_offset_refExpr,
+		ConstantExpr::create(0,Expr::Int32),
+		q_length_plus_1);
+
+	/*********************************/
+	/* Finally the actual constraint */
+	/*********************************/
+	ref<Expr> e = SelectExpr::create(
+		AndExpr::create(Is_p_not_NULL_terminated,Is_q_not_NULL_terminated),
+		error_refExpr,
+		SelectExpr::create(
+			Is_p_not_NULL_terminated,
+			ConstantExpr::create(1,Expr::Int32),
+			SelectExpr::create(
+				Is_q_not_NULL_terminated,
+				ConstantExpr::create(1,Expr::Int32),
+				StrEqExpr::create(actual_p_refExpr,actual_q_refExpr))));
+		
+	/*****************************/
+	/* Add the actual constraint */
+	/*****************************/
+	state.constraints.addConstraint(e);
+
+}
+/********************************************************/
+/*                                                      */
+/*                                                      */
+/*                                                      */
+/*                                                      */
+/*   PPPPPPPPPP          qqqqqqqqqq                     */
+/*   pp      PP          qq      qq           ii        */
+/*   pp      PP          qq      qq     +               */
+/*   pp      PP          qq      qq     +     ii        */
+/*   ppPPPPPPPP   . __   qqqqqqqqqq   +++++   ii        */
+/*   pp           . __           qq     +     ii        */
+/*   pp                          qq     +     ii   ii   */
+/*   pp                          qq           iii iii   */
+/*   pp                          qq            iiiii    */
+/*                                                      */
+/*                                                      */
+/*                                                      */
+/*                                                      */
+/********************************************************/
+void SpecialFunctionHandler::handleMyStringAssignWithOffset(
+	ExecutionState &state,
+	KInstruction *target,
+	std::vector<ref<Expr> > &arguments)
+{
+	bool result;
+	bool success;
+
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+	llvm::Value *value2 = callInst->getArgOperand(2);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+	std::string varName2 = value2->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string p = state.varNames[varName0];
+	std::string q = state.varNames[varName1];
+	std::string i = state.varNames[varName2];
+
+	/******************************************************************************/
+	/* [5] Add ANSI C constraint that q+i does NOT point beyond buffer boundaries */
+	/******************************************************************************/
+	ref<Expr> e = SgeExpr::create(
+		AddExpr::create(
+			state.ab_offset[q],
+			arguments[2]),
+
+	/*********************************/
+	/* [6] Add the actual constraint */
+	/*********************************/
+	state.constraints.addConstraint(e);
+
+	/****************************************************************************/
+	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
+	/****************************************************************************/
+	success = solver->mayBeTrue(state,e,result);
+	if (result)
+	{
+		klee_error();
+		assert(0);
+	}
+
+	/*********************************************************/
+	/* [8] Update the state's data structure with p := q + i */
+	/*********************************************************/
+	state.ab_serial[p] = state.ab_serial[q];
+	state.ab_offset[p] = AddExpr::create(state.ab_offset[q],arguments[2]);	
+}
+
+/**************************************************************/
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*      cccccc           PPPPPPPPPP    [[[[           ]]]]    */
+/*     cc    cc          pp      PP    [[    ii         ]]    */
+/*    cc                 pp      PP    [[               ]]    */
+/*    cc          . __   pp      PP    [[    ii         ]]    */
+/*    cc          . __   ppPPPPPPPP    [[    ii         ]]    */
+/*    cc                 pp            [[    ii         ]]    */
+/*    cc                 pp            [[    ii   ii    ]]    */
+/*     cc    cc          pp            [[    iii iii    ]]    */
+/*      cccccc           pp            [[[[   iiiii   ]]]]    */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/**************************************************************/
 void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
+	std::vector<ref<Expr> > &arguments)
+{
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
 
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+	llvm::Value *value2 = callInst->getArgOperand(2);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+	std::string varName2 = value2->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string c = state.varNames[varName0];
+	std::string p = state.varNames[varName1];
+	std::string i = state.varNames[varName2];
+
+	char AB_p_serial__name[128];
+	char AB_p_version_name[128];
+	int offset_p = state.ab_offset[p];
+	int serial_p = state.ab_serial[p];
+	int last_p   = state.ab_last[serial_p];
+	/**************************************************************/
+	/* [5] Apply the relevant semantics transformer for c := p[i] */
+	/**************************************************************/	
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset( AB_p_serial__name,0,sizeof(AB_p_serial__name));
+	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
+	sprintf(AB_p_serial__name,"%s_%d","_serial_", serial_q);
+	sprintf(AB_p_version_name,"%s_%d","_version_",last_q);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_p_name="AB"+AB_p_serial_name+AB_p_version_name;
+
+	/******************************************************************************/
+	/* [6] Add ANSI C constraint that p+i does NOT point beyond buffer boundaries */
+	/******************************************************************************/
+	ref<Expr> e1 = SgeExpr::create(
+		AddExpr::create(
+			state.ab_offset[p],
+			arguments[2]),
+
+	/*********************************/
+	/* [7] Add the actual constraint */
+	/*********************************/
+	state.constraints.addConstraint(e1);
+
+	/****************************************************************************/
+	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
+	/****************************************************************************/
+	success = solver->mayBeTrue(state,e1,result);
+	if (result)
+	{
+		klee_error();
+		assert(0);
+	}
+
+	/***************************/
+	/* [9] Add read constraint */
+	/***************************/
+	ref<Expr> e2 = SgeExpr::create(
+		AddExpr::create(
+			state.ab_offset[p],
+			arguments[2]),
+}
+
+/**************************************************************/
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/*    PPPPPPPPPP    [[[[           ]]]]            cccccc     */
+/*    pp      PP    [[    ii         ]]           cc    cc    */
+/*    pp      PP    [[               ]]          cc           */
+/*    pp      PP    [[    ii         ]]   . __   cc           */
+/*    ppPPPPPPPP    [[    ii         ]]   . __   cc           */
+/*    pp            [[    ii         ]]          cc           */
+/*    pp            [[    ii   ii    ]]          cc           */
+/*    pp            [[    iii iii    ]]           cc    cc    */
+/*    pp            [[[[   iiiii   ]]]]            cccccc     */
+/*                                                            */
+/*                                                            */
+/*                                                            */
+/**************************************************************/
 void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	ExecutionState &state,
 	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
+	std::vector<ref<Expr> > &arguments)
+{
+	/*****************************************/
+	/* [1] Extract the llvm call instruction */
+	/*****************************************/
+	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
+
+	/*********************************************/
+	/* [2] Extract the all three input arguments */
+	/*********************************************/
+	llvm::Value *value0 = callInst->getArgOperand(0);
+	llvm::Value *value1 = callInst->getArgOperand(1);
+	llvm::Value *value2 = callInst->getArgOperand(2);
+		
+	/********************************************/
+	/* [3] Take the name of the input arguments */
+	/********************************************/
+	std::string varName0 = value0->getName().str();
+	std::string varName1 = value1->getName().str();
+	std::string varName2 = value2->getName().str();
+
+	/*****************************************************/
+	/* [4] Go back to the original local variables names */
+	/*****************************************************/
+	std::string p = state.varNames[varName0];
+	std::string i = state.varNames[varName1];
+	std::string c = state.varNames[varName2];
+
+	char AB_p_serial__name[128];
+	char AB_p_version_name[128];
+	int offset_p = state.ab_offset[p];
+	int serial_p = state.ab_serial[p];
+	int last_p   = state.ab_last[serial_p];
+	/**************************************************************/
+	/* [5] Apply the relevant semantics transformer for p[i] := c */
+	/**************************************************************/	
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	memset( AB_p_serial__name,0,sizeof(AB_p_serial__name));
+	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
+	sprintf(AB_p_serial__name,"%s_%d","_serial_", serial_q);
+	sprintf(AB_p_version_name,"%s_%d","_version_",last_q);
+	/************************************************************************/
+	/* Assemble the abstract buffer name with its serial number and version */
+	/************************************************************************/
+	std::string AB_p_name="AB"+AB_p_serial_name+AB_p_version_name;
+
+	ref<Expr> error_refExpr;
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/
+	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
+	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
+	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
+	ref<Expr> offset_q_refExpr     = ConstantExpr::create(offset_q,Expr::Int32);
+	ref<Expr> offset_p_refExpr     = ConstantExpr::create(offset_p,Expr::Int32);
+	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
+	ref<Expr> AB_p_length_refExpr  = StrLengthExpr::create(AB_p_refExpr);
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> AB_p_offset_refExpr  =
+	StrSubstrExpr::create(
+		AB_p_refExpr,
+		offset_p_refExpr,
+		SubExpr::create(
+			AB_p_length_refExpr,
+			offset_p_refExpr));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> AB_q_offset_refExpr  =
+	StrSubstrExpr::create(
+		AB_q_refExpr,
+		offset_q_refExpr,
+		SubExpr::create(
+			AB_q_length_refExpr,
+			offset_q_refExpr));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> firstIdxOf_x00_in_p      = StrFirstIdxOfExpr::create(AB_p_offset_refExpr,x00_refExpr);
+	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
+	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> p_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> Is_p_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(-1,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> actual_p_refExpr     =
+	StrSubstrExpr::create(
+		AB_p_offset_refExpr,
+		ConstantExpr::create(0,Expr::Int32),
+		_length_plus_1);
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> actual_q_refExpr     =
+	StrSubstrExpr::create(
+		AB_q_offset_refExpr,
+		ConstantExpr::create(0,Expr::Int32),
+		q_length_plus_1);
+
+	/*********************************/
+	/* Finally the actual constraint */
+	/*********************************/
+	ref<Expr> e = SelectExpr::create(
+		SgeExpr::create(
+			AddExpr::create(
+				offset_q_refExpr,
+				ConstantExpr::create(7,Expr::Int32)),
+			ConstantExpr::create(state.ab_size[serial_q]))),
+		error_refExpr,
+		SelectExpr::create(
+			Is_p_not_NULL_terminated,
+			ConstantExpr::create(1,Expr::Int32),
+			SelectExpr::create(
+				Is_q_not_NULL_terminated,
+				ConstantExpr::create(1,Expr::Int32),
+				StrEqExpr::create(actual_p_refExpr,actual_q_refExpr))));
+		
+	if (offset_q + 
+
+	/*****************************/
+	/* Add the actual constraint */
+	/*****************************/
+	state.constraints.addConstraint(e);
+}
 
 void SpecialFunctionHandler::handleMyCharAssign(
 	ExecutionState &state,

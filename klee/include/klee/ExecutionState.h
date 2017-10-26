@@ -214,7 +214,7 @@ public:
 	/* This is over simplified for now -- the offset should      */
 	/* later be a ref<Expr> ...                                  */
 	/*************************************************************/
-	std::map<std::string,int> ab_offset;
+	std::map<std::string,ref<Expr> > ab_offset;
 
 	/*********************************************************/
 	/* size : AbstractBuffers ------> N+                     */
