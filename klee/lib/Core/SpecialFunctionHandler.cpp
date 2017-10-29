@@ -107,6 +107,7 @@ static SpecialFunctionHandler::HandlerInfo handlerInfo[] = {
   add("MyConstStringAssign",         handleMyConstStringAssign,         false),
   add("MyWriteCharToStringAtOffset", handleMyWriteCharToStringAtOffset, false),
   add("MyReadCharFromStringAtOffset",handleMyReadCharFromStringAtOffset,false),
+  add("MyStringAssignWithOffset",    handleMyStringAssignWithOffset,    false),
   add("MyMalloc",                    handleMyMalloc,                    false),
   add("MyStrcpy",                    handleMyStrcpy,                    false),
   add("MyStrchr",                    handleMyStrchr,                    false),

@@ -578,14 +578,184 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
   }
 
   // String
-  case Expr::Str_Atoi:       {Z3ASTHandle result;return result;}
-  case Expr::Str_Itoa:       {Z3ASTHandle result;return result;}
-  case Expr::Str_Const:      {Z3ASTHandle result;return result;}
-  case Expr::Str_CharAt:     {Z3ASTHandle result;return result;}
-  case Expr::Str_Substr:     {Z3ASTHandle result;return result;}
-  case Expr::Str_Compare:    {Z3ASTHandle result;return result;}
-  case Expr::Str_FirstIdxOf: {Z3ASTHandle result;return result;}
+  case Expr::Str_Var:
+  {
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrVarExpr *sve = (StrVarExpr *) e.get();
 
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_const(
+			ctx,
+			Z3_mk_string_symbol(ctx, sve->name),
+			Z3SortHandle(Z3_mk_string_sort(ctx), ctx)),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+
+  case Expr::Str_Const:
+  {
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrConstExpr *sce = (StrConstExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_string(
+			ctx,
+			sce->value),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+  case Expr::Str_CharAt:
+  {
+  	int irrelevant_width=0;
+  	
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrCharAtExpr *scae = (StrCharAtExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_seq_at(
+			ctx,
+			constructActual(scae->s,&irrelevant_width),
+			constructActual(scae->i,&irrelevant_width)),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+  case Expr::Str_Substr:
+  {
+  	int irrelevant_width=0;
+  	
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrSubstrExpr *sbtre = (StrSubstrExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_seq_extract(
+			ctx,
+			constructActual(sbtre->s,     &irrelevant_width),
+			constructActual(sbtre->offset,&irrelevant_width),
+			constructActual(sbtre->length,&irrelevant_width)),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+  case Expr::Str_FirstIdxOf:
+  {
+  	int irrelevant_width=0;
+  	
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrFirstIdxOfExpr *sfioe = (StrFirstIdxOfExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_seq_index(
+			ctx,
+			constructActual(sfioe->haystack,&irrelevant_width),
+			constructActual(sfioe->needle,  &irrelevant_width),
+			Z3_mk_int(ctx,0,Z3_mk_int_sort(ctx))),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+  case Expr::Str_Compare:
+  {
+  	int irrelevant_width=0;
+  	
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrCmpExpr *sce = (StrCmpExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_ite(
+			ctx,
+			Z3_mk_eq(
+				ctx,
+				constructActual(sce->s1,&irrelevant_width),
+				constructActual(sce->s2,&irrelevant_width)),
+			Z3_mk_int(
+				ctx,
+				1,
+				Z3_mk_int_sort(ctx)),
+			Z3_mk_int(
+				ctx,
+				0,
+				Z3_mk_int_sort(ctx))),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result;  	
+  }
+  case Expr::Str_Length:
+  {
+  	int irrelevant_width=0;
+  	
+  	/**********************************/
+  	/* Cast e to an StrVarExpr ...    */
+  	/**********************************/
+  	StrLengthExpr *sle = (StrLengthExpr *) e.get();
+
+  	/*******************************************************************/
+  	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
+  	/*******************************************************************/
+	Z3ASTHandle result = Z3ASTHandle(
+		Z3_mk_seq_length(
+			ctx,
+			constructActual(sle->s,&irrelevant_width)),
+		ctx);
+
+  	/*************************/
+  	/* return the result ... */
+  	/*************************/
+	return result; 
+  }
+  //case Expr::Str_Atoi:       {Z3ASTHandle result;return result;}
+  //case Expr::Str_Itoa:       {Z3ASTHandle result;return result;}
+  
   // Arithmetic
   case Expr::Add:
   {
