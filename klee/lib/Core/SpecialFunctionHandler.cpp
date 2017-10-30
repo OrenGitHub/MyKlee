@@ -1088,12 +1088,33 @@ void SpecialFunctionHandler::handleMyStrlen(
 		state,
 		MyStrlenFormula);
 }
-
+/**************************************************************************************************************/
+/*                                                                                                            */
+/*     ssssss    tt                                                                                           */
+/*   sss         tt                                                                                           */
+/*  sss          tttttt    rr  rrrr    cccccccc   pppppppp   yy     yy     ((  pppppppp       qqqqqqqq  ))    */
+/*   sss         tt        rr rr      cc          pp     pp   yy    yy    ((   pp     pp     qq     qq   ))   */
+/*     sss       tt        rrrr      cc           pp     pp    yy   yy   ((    pp     pp     qq     qq    ))  */
+/*       sss     tt        rrr       cc           pp     pp     yy  yy   ((    pp     pp     qq     qq    ))  */
+/*        sss    tt        rr        cc           pp     pp      yy yy   ((    pp     pp     qq     qq    ))  */
+/*        sss     tt       rr         cc          pp    pp        yyyy   ((    pp    pp      qq     qq    ))  */
+/*   sssssss       ttttt   rr          cccccccc   ppppppp          yyy    ((   ppppppp   ,,   qqqqqqqq   ))   */
+/*                                                pp                yy     ((  pp        ,,         qq  ))    */
+/*                                                pp                yy         pp       ,,          qq        */
+/*                                                pp                yy         pp                   qq        */
+/*                                                pp               yy          pp                   qq        */
+/*                                                pp          yy  yy           pp                   qq        */
+/*                                                pp           yyyy            pp                   qq        */
+/*                                                                                                            */
+/**************************************************************************************************************/
 void SpecialFunctionHandler::handleMyStrcpy(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
+	bool success;
+	bool result;
+	
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */
 	/*****************************************/
@@ -1203,6 +1224,16 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
 	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
 	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
+
+	/*************************************************************************/
+	/* Temporary ref<Expr> variables to handle the enormous final constraint */
+	/*************************************************************************/	
+	ref<Expr> Not_Enough_Memory_For_Copying = SgtExpr::create(
+		q_length_plus_1,
+		SubExpr::create(
+			AB_p_length_refExpr,
+			state.ab_offset[p]));
+
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
@@ -1212,25 +1243,38 @@ void SpecialFunctionHandler::handleMyStrcpy(
 		ConstantExpr::create(0,Expr::Int32),
 		q_length_plus_1);
 
+	/**************************************************************/
+	/* Check with the solver whether q can be NOT NULL terminated */
+	/**************************************************************/
+	success = executor.solver->mayBeTrue(state,Is_q_not_NULL_terminated,result);
+	if (result)
+	{
+		klee_error("Copying a non NULL terminated string %s",q.c_str());
+		klee_error("          ===                          ");
+			
+		assert(0);
+	}
+
+	/*************************************************************************************/
+	/* Check with the solver whether strlen(q) > remaining allocated memory space from p */
+	/*************************************************************************************/
+	success = executor.solver->mayBeTrue(state,Not_Enough_Memory_For_Copying,result);
+	if (result)
+	{
+		klee_error("Copying a too big src string(%s) to dst(%s)",q.c_str(),p.c_str());
+		klee_error("          =======                          ");
+			
+		assert(0);
+	}
 	/*********************************/
 	/* Finally the actual constraint */
 	/*********************************/
-	ref<Expr> e = SelectExpr::create(
-		Is_q_not_NULL_terminated,
-		error_refExpr,
-		SelectExpr::create(
-			SgtExpr::create(
-				q_length_plus_1,
-				SubExpr::create(
-					AB_p_length_refExpr,
-					state.ab_offset[p])),
-			error_refExpr,
-			StrEqExpr::create(
-				actual_q_refExpr,
-				StrSubstrExpr::create(
-					AB_p_refExpr,
-					state.ab_offset[p],
-					q_length_plus_1))));
+	ref<Expr> e = StrEqExpr::create(
+		actual_q_refExpr,
+		StrSubstrExpr::create(
+			AB_p_refExpr,
+			state.ab_offset[p],
+			q_length_plus_1));
 		
 	/*****************************/
 	/* Add the actual constraint */
