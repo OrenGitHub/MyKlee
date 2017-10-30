@@ -1150,19 +1150,13 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
-	std::string AB_p_prefix  = "AB";
-	std::string AB_p_serial  = "_serial_";
-	std::string AB_p_version = "_version_";
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
 	memset(AB_p_serial_name, 0,sizeof(AB_p_serial_name));
 	memset(AB_p_version_name,0,sizeof(AB_p_version_name));
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
-	sprintf(AB_p_serial_name, "%d",serial_p);
-	sprintf(AB_p_version_name,"%d",last_p);
+	sprintf(AB_p_serial_name, "_serial_%d",serial_p);
+	sprintf(AB_p_version_name,"_version_%d",last_p);
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
@@ -1186,10 +1180,10 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
-	memset( AB_q_serial_name,0,sizeof(AB_q_serial_name));
+	memset( AB_q_serial_name, 0,sizeof(AB_q_serial_name));
 	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
-	sprintf(AB_q_serial_name,"%s_%d","_serial_", serial_q);
-	sprintf(AB_q_version_name,"%s_%d","_version_",last_q);
+	sprintf(AB_q_serial_name,"_serial_%d",serial_q);
+	sprintf(AB_q_version_name,"_version_%d",last_q);
 	/************************************************************************/
 	/* Assemble the abstract buffer name with its serial number and version */
 	/************************************************************************/
@@ -1198,8 +1192,6 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	std::string(AB_q_version_name);
 	char AB_q_name[256]; memset(AB_q_name,0,sizeof(AB_q_name));strcpy(AB_q_name,AB_q_nameTag.c_str());
 
-
-	ref<Expr> error_refExpr;
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/
