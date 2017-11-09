@@ -53,7 +53,8 @@ namespace klee {
 
 ExprSMTLIBPrinter::ExprSMTLIBPrinter()
     : usedArrays(), o(NULL), query(NULL), p(NULL), haveConstantArray(false),
-      logicToUse(QF_AUFBV),
+      logicToUse(QF_S),
+//    logicToUse(QF_AUFBV),
       humanReadable(ExprSMTLIBOptions::humanReadableSMTLIB),
       smtlibBoolOptions(), arraysToCallGetValueOn(NULL) {
   setConstantDisplayMode(ExprSMTLIBOptions::argConstantDisplayMode);
@@ -404,8 +405,8 @@ void ExprSMTLIBPrinter::printAShrExpr(const ref<AShrExpr> &e) {
   *p << ")";
 }
 
-const char *ExprSMTLIBPrinter::getSMTLIBKeyword(const ref<Expr> &e) {
-
+const char *ExprSMTLIBPrinter::getSMTLIBKeyword(const ref<Expr> &e)
+{
   switch (e->getKind()) {
   case Expr::Read:
     return "select";
@@ -467,6 +468,22 @@ const char *ExprSMTLIBPrinter::getSMTLIBKeyword(const ref<Expr> &e) {
     return "bvsgt";
   case Expr::Sge:
     return "bvsge";
+
+  // Strings ...
+  case Expr::Str_Eq:
+    return "=";
+  case Expr::Str_CharAt:
+    return "str.at";
+  case Expr::Str_FirstIdxOf:
+    return "str.indexof";
+  case Expr::Str_Substr:
+    return "str.substr";
+  case Expr::Str_Var:
+    return "moishe zuchmir";
+  case Expr::Str_Const:
+    return "\"ZIBI ZIBI BOOM\"";
+  case Expr::Str_Length:
+    return "str.len";
 
   default:
     llvm_unreachable("Conversion from Expr to SMTLIB keyword failed");
@@ -545,6 +562,9 @@ void ExprSMTLIBPrinter::printSetLogic() {
     break;
   case QF_AUFBV:
     *o << "QF_AUFBV";
+    break;
+  case QF_S:
+    *o << "QF_S";
     break;
   }
   *o << " )\n";

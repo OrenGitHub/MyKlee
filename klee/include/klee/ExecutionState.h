@@ -224,7 +224,7 @@ public:
 	/* That is, the size of each abstract buffer, referenced */
 	/* by its serial number                                  */
 	/*********************************************************/
-	std::map<int,int> ab_size;
+	std::map<int,ref<Expr> > ab_size;
 
 	/*********************************************************/
 	/* last : AbstractBuffers ------> N                      */

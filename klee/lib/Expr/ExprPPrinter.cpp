@@ -290,6 +290,11 @@ private:
   void printExpr(const Expr *ep, PrintContext &PC, unsigned indent, bool printConstWidth=false) {
     bool simple = hasSimpleKids(ep);
     
+    if (ep->getKind() == Expr::Str_Const)
+    {
+    	PC << ((StrConstExpr *) ep)->value;	
+    	return;
+    }
     print(ep->getKid(0), PC);
     for (unsigned i=1; i<ep->getNumKids(); i++) {
       printSeparator(PC, simple, indent);
@@ -359,8 +364,21 @@ public:
   }
 
   void print(const ref<Expr> &e, PrintContext &PC, bool printConstWidth=false) {
-    if (ConstantExpr *CE = dyn_cast<ConstantExpr>(e))
+    //if (ConstantExpr *CE = dyn_cast<ConstantExpr>(e))
+    if (e.get() == NULL)
+    {
+		return;
+    }
+    if (e.get()->getKind() == Expr::Str_Const)
+    {
+    	printExpr(e.get(), PC, PC.pos);
+    	return;
+    }
+    if (e.get()->getKind() == Expr::Constant)
+    {
+      ConstantExpr *CE = dyn_cast<ConstantExpr>(e);
       printConst(CE, PC, printConstWidth);
+    }
     else {
       std::map<ref<Expr>, unsigned>::iterator it = bindings.find(e);
       if (it!=bindings.end()) {

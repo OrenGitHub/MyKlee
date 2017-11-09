@@ -825,10 +825,16 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_CharAt;}	
-	virtual Width     getWidth()                const {return   0;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual Width     getWidth()                const {return   32;}	
+	virtual unsigned  getNumKids()              const {return    2;}
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return s;}
+															if(i==1){return this->i;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_CharAt; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 /*************************/
@@ -854,10 +860,15 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_FromBitVec8;}	
-	virtual Width     getWidth()                const {return   0;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual Width     getWidth()                const {return   32;}	
+	virtual unsigned  getNumKids()              const {return   1;}	
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return someBitVec8;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_FromBitVec8; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 /*************/
@@ -885,10 +896,16 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_FirstIdxOf;}	
-	virtual Width     getWidth()                const {return   0;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual Width     getWidth()                const {return   32;}	
+	virtual unsigned  getNumKids()              const {return    2;}	
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return haystack;}
+															if(i==1){return needle;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_FirstIdxOf; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 /*************/
@@ -916,10 +933,16 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Eq;}	
-	virtual Width     getWidth()                const {return   0;}	
+	virtual Width     getWidth()                const {return   32;}	
 	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return s1;}
+															if(i==1){return s2;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Eq; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 /*****************/
@@ -949,10 +972,17 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Substr;}	
-	virtual Width     getWidth()                const {return   0;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual Width     getWidth()                const {return   32;}	
+	virtual unsigned  getNumKids()              const {return   3;}	
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return s;}
+															if(i==1){return offset;}
+															if(i==2){return length;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Substr; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 class StrConstExpr : public Expr {
@@ -976,10 +1006,12 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Const;}	
-	virtual Width     getWidth()                const {return   0;}	
+	virtual Width     getWidth()                const {return   32;}	
 	virtual unsigned  getNumKids()              const {return   0;}	
 	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Const; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 
@@ -1004,10 +1036,12 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Var;}	
-	virtual Width     getWidth()                const {return   0;}	
+	virtual Width     getWidth()                const {return   32;}	
 	virtual unsigned  getNumKids()              const {return   0;}	
 	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Var; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 class StrLengthExpr : public Expr {
@@ -1030,10 +1064,15 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Length;}	
-	virtual Width     getWidth()                const {return   0;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
+	virtual Width     getWidth()                const {return   32;}	
+	virtual unsigned  getNumKids()              const {return   1;}	
+	virtual ref<Expr> getKid(unsigned int i)    const	{
+															if(i==0){return s;}
+															return 0;
+														}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Length; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 class StrCmpExpr : public Expr {
@@ -1057,11 +1096,13 @@ public:
 	/* The rest of the functions are just dummy functions to keep the        */
 	/* original klee design                                                  */
 	/*************************************************************************/	
-	virtual Kind      getKind()                 const {return   Expr::Str_Length;}	
-	virtual Width     getWidth()                const {return   0;}	
+	virtual Kind      getKind()                 const {return   Expr::Str_Compare;}	
+	virtual Width     getWidth()                const {return   32;}	
 	virtual unsigned  getNumKids()              const {return   0;}	
 	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Compare; }
+	static bool classof(const ConstantExpr *) { return false; }	
 };
 
 // Casting

@@ -1195,7 +1195,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/
-	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
+	ref<Expr> x00_refExpr          = StrConstExpr::create("\\x00");
 	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
 	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
 	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
@@ -1210,12 +1210,25 @@ void SpecialFunctionHandler::handleMyStrcpy(
 		SubExpr::create(
 			AB_q_length_refExpr,
 			state.ab_offset[q]));
+			
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
 	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
-	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
-	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
+	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(622,Expr::Int32));
+	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(arguments[0],arguments[1]);
+	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
+	//	StrLengthExpr::create(StrVarExpr::create("SomeStringVar")),
+	//	ConstantExpr::create(173,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
+		StrLengthExpr::create(StrConstExpr::create("OrenIshShalom")),
+		ConstantExpr::create(173,Expr::Int32));
+	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
+	//	StrFirstIdxOfExpr::create(
+	//		StrConstExpr::create("AB"),
+	//		StrConstExpr::create("A")),
+	//	ConstantExpr::create(173,Expr::Int32));
+	// ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(748,Expr::Int32));
 
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
@@ -1362,7 +1375,7 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	/* Update the state's data structures ... */
 	/******************************************/
 	state.ab_serial[p] = serial_p;
-	state.ab_offset[p]        = 0;
+	state.ab_offset[p]        = ConstantExpr::create(0,Expr::Int32);
 	state.ab_last[serial_p]   = 0;
 
 	char ABserialNumber[128];
@@ -1628,7 +1641,7 @@ void SpecialFunctionHandler::handleMyStringAssignWithOffset(
 		AddExpr::create(
 			state.ab_offset[q],
 			arguments[2]),
-		ConstantExpr::create(state.ab_size[state.ab_serial[q]],Expr::Int32));
+		state.ab_size[state.ab_serial[q]]);
 
 	/*********************************/
 	/* [6] Add the actual constraint */
@@ -1739,12 +1752,12 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 		AddExpr::create(
 			state.ab_offset[p],
 			arguments[2]),
-		ConstantExpr::create(state.ab_size[serial_p],Expr::Int32));
+		state.ab_size[serial_p]);
 
 	/*********************************/
 	/* [7] Add the actual constraint */
 	/*********************************/
-	state.constraints.addConstraint(e1);
+	state.constraints.addConstraint(NotExpr::create(e1));
 
 	/****************************************************************************/
 	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
@@ -1851,28 +1864,28 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	ref<Expr> e1 = SgeExpr::create(
 		AddExpr::create(
 			state.ab_offset[p],
-			arguments[2]),
-		ConstantExpr::create(state.ab_size[serial_p],Expr::Int32));
-
-	/*********************************/
-	/* [7] Add the actual constraint */
-	/*********************************/
-	state.constraints.addConstraint(e1);
+			arguments[1]),
+		state.ab_size[serial_p]);
 
 	/****************************************************************************/
-	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
+	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
 	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
 	{
 		klee_error(
-			"Illegal Assignment: %s := %s + %s",
-			c.c_str(),
+			"%s + %s points outside the allocated memory associated with %s",
 			p.c_str(),
-			i.c_str());
+			i.c_str(),
+			p.c_str());
 
 		assert(0);
 	}
+
+	/*********************************/
+	/* [8] Add the actual constraint */
+	/*********************************/
+	state.constraints.addConstraint(NotExpr::create(e1));
 
 	/***************************/
 	/* [9] Add read constraint */
@@ -2004,12 +2017,14 @@ void SpecialFunctionHandler::handleMyMalloc(
 	/*                                                                         */
 	/*     serial(p) = some-new-serial                                         */
 	/*     last(serial(p)) = 0                                                 */
+	/*     size(serial(p)) = size                                              */
 	/*     offset(p) = 0                                                       */
 	/*                                                                         */
 	/***************************************************************************/
 	state.ab_serial[p] = ++state.numABSerials;
 	state.ab_last[state.ab_serial[p]] = 0;
 	state.ab_offset[p] = ConstantExpr::create(0,Expr::Int32);
+	state.ab_size[state.ab_serial[p]] = arguments[1];
 
 	/***********************************/
 	/* [6] For debug purposes only ... */

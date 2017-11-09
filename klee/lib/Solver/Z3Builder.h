@@ -15,9 +15,16 @@
 #include "klee/Config/config.h"
 #include <z3.h>
 
+static int serialNumberForDebug = 0x12341234;
+
 namespace klee {
 
 template <typename T> class Z3NodeHandle {
+public:
+  /*************************************************************************/
+  /* After endless debug struggles, I'm adding this harmless serial number */
+  /*************************************************************************/
+  int harmlessSerialNumber;
   // Internally these Z3 types are pointers
   // so storing these should be cheap.
   // It would be nice if we could infer the Z3_context from the node
@@ -31,10 +38,16 @@ private:
   inline ::Z3_ast as_ast();
 
 public:
-  Z3NodeHandle() : node(NULL), context(NULL) {}
+  Z3NodeHandle() : node(NULL), context(NULL)
+  {
+  	harmlessSerialNumber = serialNumberForDebug++;
+  }
   Z3NodeHandle(const T _node, const ::Z3_context _context)
-      : node(_node), context(_context) {
-    if (node && context) {
+      : node(_node), context(_context)
+  {
+    harmlessSerialNumber = serialNumberForDebug++;
+    if (node && context)
+    {
       ::Z3_inc_ref(context, as_ast());
     }
   };
@@ -43,7 +56,9 @@ public:
       ::Z3_dec_ref(context, as_ast());
     }
   }
-  Z3NodeHandle(const Z3NodeHandle &b) : node(b.node), context(b.context) {
+  Z3NodeHandle(const Z3NodeHandle &b) : node(b.node), context(b.context)
+  {
+    harmlessSerialNumber = serialNumberForDebug++;
     if (node && context) {
       ::Z3_inc_ref(context, as_ast());
     }
@@ -67,12 +82,18 @@ public:
     if (node && context) {
       ::Z3_inc_ref(context, as_ast());
     }
+    this->harmlessSerialNumber = b.harmlessSerialNumber;
     return *this;
   }
   // To be specialised
   void dump();
 
-  operator T() { return node; }
+  operator T()
+  {
+  	int moish=90;
+  	if (moish ==50){node=NULL;}
+  	return node;
+  }
 };
 
 // Specialise for Z3_sort
@@ -108,7 +129,9 @@ public:
 class Z3Builder {
   ExprHashMap<std::pair<Z3ASTHandle, unsigned> > constructed;
   Z3ArrayExprHash _arr_hash;
-
+public:
+	Z3_ast ConvertInt2BitVec32(Z3_ast ast);
+	Z3_ast ConvertBitVec32ToInt(Z3_ast ast);
 private:
   Z3ASTHandle bvOne(unsigned width);
   Z3ASTHandle bvZero(unsigned width);

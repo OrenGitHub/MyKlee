@@ -212,9 +212,20 @@ bool Z3SolverImpl::internalRunSolver(
   // but Z3 works in terms of satisfiability so instead we ask the
   // negation of the equivalent i.e.
   // ∃ X Constraints(X) ∧ ¬ query(X)
+  query.dump();
+
+  static int numTimes=0;
+
+  if (numTimes == 1)
+  {
+  	int dave=0;
+  }
+
   Z3_solver_assert(
       builder->ctx, theSolver,
       Z3ASTHandle(Z3_mk_not(builder->ctx, z3QueryExpr), builder->ctx));
+
+  numTimes++;
 
   ::Z3_lbool satisfiable = Z3_solver_check(builder->ctx, theSolver);
   runStatusCode = handleSolverResponse(theSolver, satisfiable, objects, values,

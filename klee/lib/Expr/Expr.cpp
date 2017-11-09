@@ -151,6 +151,14 @@ void Expr::printKind(llvm::raw_ostream &os, Kind k) {
     X(Sle);
     X(Sgt);
     X(Sge);
+    // String actions from here ...
+    X(Str_CharAt);
+    X(Str_Compare);
+    X(Str_Const);
+    X(Str_FirstIdxOf);
+    X(Str_Length);
+    X(Str_Substr);
+    X(Str_Var);
 #undef X
   default:
     assert(0 && "invalid kind");
@@ -937,6 +945,11 @@ static ref<Expr> AShrExpr_create(const ref<Expr> &l, const ref<Expr> &r) {
 
 #define BCREATE_R(_e_op, _op, partialL, partialR) \
 ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) { \
+  if (l->getWidth() != r->getWidth())                                   \
+  {                                                                     \
+  	llvm::errs() << "l->getWidth() = " << l->getWidth() << "\n";        \
+  	llvm::errs() << "r->getWidth() = " << r->getWidth() << "\n";        \
+  }                                                                     \
   assert(l->getWidth()==r->getWidth() && "type mismatch");              \
   if (ConstantExpr *cl = dyn_cast<ConstantExpr>(l)) {                   \
     if (ConstantExpr *cr = dyn_cast<ConstantExpr>(r))                   \
@@ -950,6 +963,11 @@ ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) { \
 
 #define BCREATE(_e_op, _op) \
 ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) { \
+  if (l->getWidth() != r->getWidth())                                   \
+  {                                                                     \
+  	llvm::errs() << "l->getWidth() = " << l->getWidth() << "\n";        \
+  	llvm::errs() << "r->getWidth() = " << r->getWidth() << "\n";        \
+  }                                                                     \
   assert(l->getWidth()==r->getWidth() && "type mismatch");          \
   if (ConstantExpr *cl = dyn_cast<ConstantExpr>(l))                 \
     if (ConstantExpr *cr = dyn_cast<ConstantExpr>(r))               \
@@ -973,6 +991,11 @@ BCREATE(AShrExpr, AShr)
 
 #define CMPCREATE(_e_op, _op) \
 ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) { \
+  if (l->getWidth() != r->getWidth())                                   \
+  {                                                                     \
+  	llvm::errs() << "l->getWidth() = " << l->getWidth() << "\n";        \
+  	llvm::errs() << "r->getWidth() = " << r->getWidth() << "\n";        \
+  }                                                                     \
   assert(l->getWidth()==r->getWidth() && "type mismatch");              \
   if (ConstantExpr *cl = dyn_cast<ConstantExpr>(l))                     \
     if (ConstantExpr *cr = dyn_cast<ConstantExpr>(r))                   \
@@ -982,6 +1005,11 @@ ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) { \
 
 #define CMPCREATE_T(_e_op, _op, _reflexive_e_op, partialL, partialR) \
 ref<Expr>  _e_op ::create(const ref<Expr> &l, const ref<Expr> &r) {    \
+  if (l->getWidth() != r->getWidth())                                   \
+  {                                                                     \
+  	llvm::errs() << "l->getWidth() = " << l->getWidth() << "\n";        \
+  	llvm::errs() << "r->getWidth() = " << r->getWidth() << "\n";        \
+  }                                                                     \
   assert(l->getWidth()==r->getWidth() && "type mismatch");             \
   if (ConstantExpr *cl = dyn_cast<ConstantExpr>(l)) {                  \
     if (ConstantExpr *cr = dyn_cast<ConstantExpr>(r))                  \
