@@ -1356,6 +1356,7 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	/*     serial(p)      := serial_p                                          */
 	/*     offset(p)      := 0                                                 */
 	/*     last(serial_p) := 0                                                 */
+	/*     size(serial_p) := strlen(THE-CONSTANT-STRING)                       */
 	/*                                                                         */
 	/*     CONS.add(= AB_{serial_p,0} THE-CONSTANT-STRING)                     */
 	/*                                                                         */
@@ -1377,6 +1378,9 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	state.ab_serial[p] = serial_p;
 	state.ab_offset[p]        = ConstantExpr::create(0,Expr::Int32);
 	state.ab_last[serial_p]   = 0;
+	state.ab_size[serial_p] = ConstantExpr::create(
+		actualCStringContent.length(),
+		Expr::Int32);
 
 	char ABserialNumber[128];
 	char ABversionNumber[128];
@@ -1417,6 +1421,11 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	char actualCStringContent_C_String_Format[256];
 	memset(actualCStringContent_C_String_Format,0,sizeof(actualCStringContent_C_String_Format));
 	strcpy(actualCStringContent_C_String_Format,actualCStringContent.c_str());
+	int n = strlen(actualCStringContent_C_String_Format);
+	actualCStringContent_C_String_Format[n+0] = '\\';
+	actualCStringContent_C_String_Format[n+1] = 'x';
+	actualCStringContent_C_String_Format[n+2] = '0';
+	actualCStringContent_C_String_Format[n+3] = '0';
 	
 	/***************************/
 	/* Add relevant constraint */
@@ -1643,13 +1652,8 @@ void SpecialFunctionHandler::handleMyStringAssignWithOffset(
 			arguments[2]),
 		state.ab_size[state.ab_serial[q]]);
 
-	/*********************************/
-	/* [6] Add the actual constraint */
-	/*********************************/
-	state.constraints.addConstraint(e);
-
 	/****************************************************************************/
-	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
+	/* [6] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
 	success = executor.solver->mayBeTrue(state,e,result);
 	if (result)
@@ -1662,6 +1666,11 @@ void SpecialFunctionHandler::handleMyStringAssignWithOffset(
 			
 		assert(0);
 	}
+
+	/*********************************/
+	/* [7] Add the actual constraint */
+	/*********************************/
+	state.constraints.addConstraint(NotExpr::create(e));
 
 	/*********************************************************/
 	/* [8] Update the state's data structure with p := q + i */
@@ -1754,13 +1763,8 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 			arguments[2]),
 		state.ab_size[serial_p]);
 
-	/*********************************/
-	/* [7] Add the actual constraint */
-	/*********************************/
-	state.constraints.addConstraint(NotExpr::create(e1));
-
 	/****************************************************************************/
-	/* [8] Check with the solver whether q+i can point beyond buffer boundaries */
+	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
 	/****************************************************************************/
 	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
@@ -1773,6 +1777,11 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 			
 		assert(0);
 	}
+
+	/*********************************/
+	/* [8] Add the actual constraint */
+	/*********************************/
+	state.constraints.addConstraint(NotExpr::create(e1));
 
 	/***************************/
 	/* [9] Add read constraint */
@@ -1809,6 +1818,11 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 {
 	bool success;
 	bool result;
+
+	/****************************************************/
+	/* [0] Inside handleMyWriteCharToStringAtOffset ... */
+	/****************************************************/
+	llvm::errs() << "Inside handleMyWriteCharToStringAtOffset" << "\n";
 
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */

@@ -84,6 +84,8 @@ static void setupHandler() {
   ::signal(SIGALRM, onAlarm);
 }
 
+void Executor::initTimers() {}
+#if 0
 void Executor::initTimers() {
   static bool first = true;
 
@@ -96,7 +98,7 @@ void Executor::initTimers() {
     addTimer(new HaltTimer(this), MaxTime.getValue());
   }
 }
-
+#endif
 ///
 
 Executor::Timer::Timer() {}
@@ -107,6 +109,10 @@ void Executor::addTimer(Timer *timer, double rate) {
   timers.push_back(new TimerInfo(timer, rate));
 }
 
+// OISH ... commented out this function ...
+void Executor::processTimers(ExecutionState *current,
+                             double maxInstTime) {}
+#if 0
 void Executor::processTimers(ExecutionState *current,
                              double maxInstTime) {
   static unsigned callsWithoutCheck = 0;
@@ -207,4 +213,4 @@ void Executor::processTimers(ExecutionState *current,
     callsWithoutCheck = 0;
   }
 }
-
+#endif

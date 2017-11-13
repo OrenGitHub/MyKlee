@@ -216,7 +216,7 @@ bool Z3SolverImpl::internalRunSolver(
 
   static int numTimes=0;
 
-  if (numTimes == 1)
+  if (numTimes == 3)
   {
   	int dave=0;
   }
