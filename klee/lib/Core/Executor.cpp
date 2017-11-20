@@ -107,6 +107,8 @@
 #include <errno.h>
 #include <cxxabi.h>
 
+#include "/home/oren/GIT/MyKlee/z3/src/api/z3.h"
+
 using namespace llvm;
 using namespace klee;
 
@@ -1540,7 +1542,14 @@ static inline const llvm::fltSemantics * fpWidthToSemantics(unsigned width) {
 
 void Executor::executeInstruction(ExecutionState &state, KInstruction *ki)
 {
+  static int FirstTime=1;
   Instruction *i = ki->inst;
+  
+  if (FirstTime == 1) {
+      FirstTime  = 0;
+      Z3_open_log("Z3LogFile.txt");
+  }
+  
   switch (i->getOpcode()) {
     // Control flow
   case Instruction::Ret: {

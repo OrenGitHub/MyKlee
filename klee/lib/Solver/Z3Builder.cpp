@@ -512,49 +512,34 @@ Z3_ast Z3Builder::ConvertBitVec32ToInt(Z3_ast ast)
 		bvConst32(32,8)))))))));
 }
 
-Z3_ast Z3Builder::ConvertInt2BitVec32(Z3_ast ast)
+Z3ASTHandle Z3Builder::ConvertInt2BitVec32(Z3_ast ast)
 {
-	return Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,0,Z3_mk_int_sort(ctx))),
-		bvConst32(32,0),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,1,Z3_mk_int_sort(ctx))),
-		bvConst32(32,1),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,2,Z3_mk_int_sort(ctx))),
-		bvConst32(32,2),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,3,Z3_mk_int_sort(ctx))),
-		bvConst32(32,3),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,4,Z3_mk_int_sort(ctx))),
-		bvConst32(32,4),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,5,Z3_mk_int_sort(ctx))),
-		bvConst32(32,5),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx))),
-		bvConst32(32,6),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,7,Z3_mk_int_sort(ctx))),
-		bvConst32(32,7),
-		bvConst32(32,8)))))))));
+	return
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,0,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,0),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,1,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,1),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,2,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,2),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,3,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,3),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,4,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,4),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,5,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,5),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,6),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,7,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,7),
+			bvConst32(32,8)))))))));
 }
 
 /** if *width_out!=1 then result is a bitvector,
@@ -1171,7 +1156,7 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
     SltExpr *se = cast<SltExpr>(e);
     Z3ASTHandle left = construct(se->left, width_out);
     Z3ASTHandle right = construct(se->right, width_out);
-    assert(*width_out != 1 && "uncanonicalized slt");
+    // assert(*width_out != 1 && "uncanonicalized slt");
     *width_out = 1;
     return sbvLtExpr(left, right);
   }

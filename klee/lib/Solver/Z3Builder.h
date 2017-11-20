@@ -130,7 +130,7 @@ class Z3Builder {
   ExprHashMap<std::pair<Z3ASTHandle, unsigned> > constructed;
   Z3ArrayExprHash _arr_hash;
 public:
-	Z3_ast ConvertInt2BitVec32(Z3_ast ast);
+	Z3ASTHandle ConvertInt2BitVec32(Z3_ast ast);
 	Z3_ast ConvertBitVec32ToInt(Z3_ast ast);
 private:
   Z3ASTHandle bvOne(unsigned width);

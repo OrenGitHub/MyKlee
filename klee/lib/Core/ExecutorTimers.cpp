@@ -84,8 +84,10 @@ static void setupHandler() {
   ::signal(SIGALRM, onAlarm);
 }
 
+#if ORENISHSHALOM
+sdafjnasdlfjkbSDF
 void Executor::initTimers() {}
-#if 0
+#else
 void Executor::initTimers() {
   static bool first = true;
 
@@ -109,10 +111,11 @@ void Executor::addTimer(Timer *timer, double rate) {
   timers.push_back(new TimerInfo(timer, rate));
 }
 
-// OISH ... commented out this function ...
+#if ORENISHSHALOM
+sd;flnjsfdg;lknsdfg
 void Executor::processTimers(ExecutionState *current,
                              double maxInstTime) {}
-#if 0
+#else
 void Executor::processTimers(ExecutionState *current,
                              double maxInstTime) {
   static unsigned callsWithoutCheck = 0;

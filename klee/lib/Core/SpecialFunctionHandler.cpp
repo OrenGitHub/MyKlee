@@ -1221,8 +1221,8 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	//	StrLengthExpr::create(StrVarExpr::create("SomeStringVar")),
 	//	ConstantExpr::create(173,Expr::Int32));
 	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
-		StrLengthExpr::create(StrConstExpr::create("OrenIshShalom")),
-		ConstantExpr::create(173,Expr::Int32));
+		StrLengthExpr::create(StrConstExpr::create("Oren")),
+		ConstantExpr::create(6,Expr::Int32));
 	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
 	//	StrFirstIdxOfExpr::create(
 	//		StrConstExpr::create("AB"),

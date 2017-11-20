@@ -987,17 +987,27 @@ public:
 
 class StrConstExpr : public Expr {
 public:
+	// TODO make std::string
 	char value[256];
 
-public:
-	static ref<Expr> create(const char *value)
-	{
-		StrConstExpr *e = new StrConstExpr;
-		memset(e->value,0,sizeof(e->value));
-		strcpy(e->value,value);
-		return e;
+	StrConstExpr(const char * value_) {
+		memset(value,0,sizeof(value));
+		strncpy(value, value_,sizeof(value)-1);		
+		value[sizeof(value)-1]='\0';
 	}
 
+public:
+	static ref<Expr> create(const char *value) {
+		return StrConstExpr::alloc(value);
+	}
+
+	static ref<Expr> alloc(const char *value)
+	{
+		ref<Expr> res(new StrConstExpr(value));
+		res->computeHash();
+		return res;
+	}
+	
 public:
 	/*************************************************************************/
 	/* There are 5 pure virtual functions in Expr, which must be implemented */
@@ -1008,8 +1018,8 @@ public:
 	virtual Kind      getKind()                 const {return   Expr::Str_Const;}	
 	virtual Width     getWidth()                const {return   32;}	
 	virtual unsigned  getNumKids()              const {return   0;}	
-	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
-	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
+	virtual ref<Expr> getKid(unsigned int)      const {abort(); ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {abort(); ref<Expr> moish; return moish;}
 	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Const; }
 	static bool classof(const ConstantExpr *) { return false; }	
 };
@@ -1047,13 +1057,22 @@ public:
 class StrLengthExpr : public Expr {
 public:
 	ref<Expr> s;
+	
+	StrLengthExpr(const ref<Expr> & _s) : s(_s) {}
 
 public:
-	static ref<Expr> create(ref<Expr> s)
+	static ref<Expr> create(const ref<Expr> & s)
 	{
-		StrLengthExpr *e = new StrLengthExpr;
-		e->s = s;
-		return e;
+		//StrLengthExpr *e = new StrLengthExpr;
+		//e->s = s;
+		//return e;
+		return StrLengthExpr::alloc(s);
+	}
+	
+	static ref<Expr> alloc(const ref<Expr> & s) {
+		ref<Expr> res(new StrLengthExpr(s));
+		res->computeHash();
+		return res;
 	}
 
 public:
