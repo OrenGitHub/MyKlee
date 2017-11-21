@@ -985,19 +985,56 @@ public:
 	static bool classof(const ConstantExpr *) { return false; }	
 };
 
+class StrFromBitVec8Expr : public Expr {
+public:
+	ref<Expr> c;
+
+	StrFromBitVec8Expr(const ref<Expr> &in_c) : c(in_c) {}
+
+	static ref<Expr> create(const ref<Expr> &in_c)
+	{
+		return StrFromBitVec8Expr::alloc(in_c);
+	}
+	
+	static ref<Expr> alloc(const ref<Expr> &in_c)
+	{
+		ref<Expr> res(new StrFromBitVec8Expr(in_c));
+		res->computeHash();
+		return res;
+	}
+	
+public:
+	/*************************************************************************/
+	/* There are 5 pure virtual functions in Expr, which must be implemented */
+	/* Out of those 5 functions, only 1 is truly relevant for us: getKind    */
+	/* The rest of the functions are just dummy functions to keep the        */
+	/* original klee design                                                  */
+	/*************************************************************************/	
+	virtual Kind      getKind()                 const {return   Expr::Str_FromBitVec8;}	
+	virtual Width     getWidth()                const {return   8;}	
+	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual ref<Expr> getKid(unsigned int)      const {abort(); ref<Expr> moish; return moish;}
+	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {abort(); ref<Expr> moish; return moish;}
+	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_FromBitVec8; }
+	static bool classof(const ConstantExpr *) { return false; }	
+};
+
+#define MAX_CONST_STRING_LENGTH 256
+
 class StrConstExpr : public Expr {
 public:
-	// TODO make std::string
-	char value[256];
+	char value[MAX_CONST_STRING_LENGTH];
 
-	StrConstExpr(const char * value_) {
-		memset(value,0,sizeof(value));
-		strncpy(value, value_,sizeof(value)-1);		
-		value[sizeof(value)-1]='\0';
+	StrConstExpr(const char *in_value)
+	{
+		memset(value,0,MAX_CONST_STRING_LENGTH);
+		strncpy(value,in_value,MAX_CONST_STRING_LENGTH-1);		
+		value[MAX_CONST_STRING_LENGTH-1]=0;
 	}
 
 public:
-	static ref<Expr> create(const char *value) {
+	static ref<Expr> create(const char *value)
+	{
 		return StrConstExpr::alloc(value);
 	}
 
@@ -1058,19 +1095,17 @@ class StrLengthExpr : public Expr {
 public:
 	ref<Expr> s;
 	
-	StrLengthExpr(const ref<Expr> & _s) : s(_s) {}
+	StrLengthExpr(const ref<Expr> &in_s) : s(in_s) {}
 
 public:
-	static ref<Expr> create(const ref<Expr> & s)
+	static ref<Expr> create(const ref<Expr> &in_s)
 	{
-		//StrLengthExpr *e = new StrLengthExpr;
-		//e->s = s;
-		//return e;
-		return StrLengthExpr::alloc(s);
+		return StrLengthExpr::alloc(in_s);
 	}
 	
-	static ref<Expr> alloc(const ref<Expr> & s) {
-		ref<Expr> res(new StrLengthExpr(s));
+	static ref<Expr> alloc(const ref<Expr> &in_s)
+	{
+		ref<Expr> res(new StrLengthExpr(in_s));
 		res->computeHash();
 		return res;
 	}

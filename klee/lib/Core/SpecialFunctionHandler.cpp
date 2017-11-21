@@ -101,9 +101,7 @@ static SpecialFunctionHandler::HandlerInfo handlerInfo[] = {
   /* true is for returning a value ... */
   /*************************************/
   add("MyAtoi",                      handleMyAtoi,                      true),
-  add("MyIntAssign",                 handleMyIntAssign,                 false),
   add("My_p_assign_NULL",            handleMy_p_assign_NULL,            false),
-  add("MyCharAssign",                handleMyCharAssign,                false),
   add("MyConstStringAssign",         handleMyConstStringAssign,         false),
   add("MyWriteCharToStringAtOffset", handleMyWriteCharToStringAtOffset, false),
   add("MyReadCharFromStringAtOffset",handleMyReadCharFromStringAtOffset,false),
@@ -1007,6 +1005,40 @@ ref<Expr> MyStrlenFormula(void)
 	//	);
 }
 
+#define AB_MAX_NAME_LENGTH 256
+
+void Assemble_Abstract_Buffer_Name(int serial, int version, char name[AB_MAX_NAME_LENGTH])
+{
+	/*************************************************************/
+	/* [0] Declare and clear the serial and version name buffers */
+	/*************************************************************/
+	char serial_name[ AB_MAX_NAME_LENGTH]={0};
+	char version_name[AB_MAX_NAME_LENGTH]={0};
+	
+	/**************************************************/
+	/* [1] Initialize serial and version name buffers */
+	/**************************************************/
+	sprintf(serial_name, "_%s_%d","serial", serial);
+	sprintf(version_name,"_%s_%d","version",version);
+
+	/*****************************************/
+	/* [2] Assemble the abstract buffer name */
+	/*****************************************/
+	std::string nameTag="AB"+
+	std::string(serial_name)+
+	std::string(version_name);
+	
+	/**************************************************/
+	/* [3] Clear abstract buffer name just to be sure */
+	/**************************************************/
+	memset(name,0,AB_MAX_NAME_LENGTH);
+
+	/*********************************/
+	/* [4] Copy abstract buffer name */
+	/*********************************/
+	strcpy(name,nameTag.c_str());
+}
+
 void SpecialFunctionHandler::handleMyStrlen(
 	ExecutionState &state,
 	KInstruction *target,
@@ -1112,8 +1144,11 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
-	bool success;
-	bool result;
+	bool result=false;
+	bool success=false;
+	
+	char AB_p_name[AB_MAX_NAME_LENGTH]={0};
+	char AB_q_name[AB_MAX_NAME_LENGTH]={0};
 	
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */
@@ -1138,59 +1173,23 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	std::string p = state.varNames[varName0];
 	std::string q = state.varNames[varName1];
 
-	/****************************************************************/
-	/* [5] Apply the relevant semantics transformer for strcpy(p,q) */
-	/****************************************************************/
-	state.ab_offset[p];
+	/***********************************/
+	/* [5] Extract serials for p and q */
+	/***********************************/
 	int serial_p = state.ab_serial[p];
-	int last_p   = state.ab_last[serial_p];
-	
-	char AB_p_serial_name[128];
-	char AB_p_version_name[128];
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset(AB_p_serial_name, 0,sizeof(AB_p_serial_name));
-	memset(AB_p_version_name,0,sizeof(AB_p_version_name));
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	sprintf(AB_p_serial_name, "_serial_%d",serial_p);
-	sprintf(AB_p_version_name,"_version_%d",last_p);
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_p_nameTag="AB"+
-	std::string(AB_p_serial_name)+
-	std::string(AB_p_version_name);
-	char AB_p_name[256];memset(AB_p_name,0,sizeof(AB_p_name));strcpy(AB_p_name,AB_p_nameTag.c_str());
-
-	/************************************************************************/
-	/************************************************************************/
-	/************************************************************************/
-	/************************ Now the same for q ... ************************/
-	/************************************************************************/
-	/************************************************************************/
-	/************************************************************************/
 	int serial_q = state.ab_serial[q];
+
+	/*****************************************/
+	/* [6] Extract last versions for p and q */
+	/*****************************************/
+	int last_p   = state.ab_last[serial_p];
 	int last_q   = state.ab_last[serial_q];
-	
-	char AB_q_serial_name[128];
-	char AB_q_version_name[128];
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset( AB_q_serial_name, 0,sizeof(AB_q_serial_name));
-	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
-	sprintf(AB_q_serial_name,"_serial_%d",serial_q);
-	sprintf(AB_q_version_name,"_version_%d",last_q);
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_q_nameTag="AB"+
-	std::string(AB_q_serial_name)+
-	std::string(AB_q_version_name);
-	char AB_q_name[256]; memset(AB_q_name,0,sizeof(AB_q_name));strcpy(AB_q_name,AB_q_nameTag.c_str());
+
+	/************************************************************************************/
+	/* [7] Assemble the abstract buffers names (with their serial numbers and versions) */
+	/************************************************************************************/
+	Assemble_Abstract_Buffer_Name(serial_p,last_p,AB_p_name);
+	Assemble_Abstract_Buffer_Name(serial_q,last_q,AB_q_name);
 
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
@@ -1215,20 +1214,8 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
 	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
-	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(622,Expr::Int32));
-	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(arguments[0],arguments[1]);
-	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
-	//	StrLengthExpr::create(StrVarExpr::create("SomeStringVar")),
-	//	ConstantExpr::create(173,Expr::Int32));
-	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
-		StrLengthExpr::create(StrConstExpr::create("Oren")),
-		ConstantExpr::create(6,Expr::Int32));
-	//ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(
-	//	StrFirstIdxOfExpr::create(
-	//		StrConstExpr::create("AB"),
-	//		StrConstExpr::create("A")),
-	//	ConstantExpr::create(173,Expr::Int32));
-	// ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(748,Expr::Int32));
+	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(0,Expr::Int32));
 
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
@@ -1300,6 +1287,8 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	std::string varName1Tag;
 
 	llvm::GetElementPtrInst * value1Gep;
+	
+	char name[AB_MAX_NAME_LENGTH];
 
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */
@@ -1379,41 +1368,13 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	state.ab_offset[p]        = ConstantExpr::create(0,Expr::Int32);
 	state.ab_last[serial_p]   = 0;
 	state.ab_size[serial_p] = ConstantExpr::create(
-		actualCStringContent.length(),
+		actualCStringContent.length()+1,
 		Expr::Int32);
 
-	char ABserialNumber[128];
-	char ABversionNumber[128];
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string ABname          = "AB";
-	std::string ABserial        = "_serial_";
-	std::string ABversion       = "_version_";
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset(ABserialNumber, 0,sizeof(ABversionNumber));
-	memset(ABversionNumber,0,sizeof(ABversionNumber));
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	sprintf(ABserialNumber, "%d",serial_p);
-	sprintf(ABversionNumber,"%d",0);
-
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string nameTag =
-		ABname          +
-		ABserial        +
-		ABserialNumber  +
-		ABversion       +
-		ABversionNumber;
-
-	char name[256];
-	memset(name,0,sizeof(name));
-	strcpy(name,nameTag.c_str());
+	/***************************************************************************/
+	/* Assemble the abstract buffers name (with its serial number and version) */
+	/***************************************************************************/
+	Assemble_Abstract_Buffer_Name(serial_p,0,name);
 
 	/***************************/
 	/* Add relevant constraint */
@@ -1426,6 +1387,7 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	actualCStringContent_C_String_Format[n+1] = 'x';
 	actualCStringContent_C_String_Format[n+2] = '0';
 	actualCStringContent_C_String_Format[n+3] = '0';
+	actualCStringContent_C_String_Format[n+4] =  0 ;
 	
 	/***************************/
 	/* Add relevant constraint */
@@ -1436,12 +1398,36 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 		
 	state.constraints.addConstraint(e);
 }
-
+/******************************************************************************************************************/
+/*                                                                                                                */
+/*     ssssss    tt                                                                                               */
+/*   sss         tt                                                                                               */
+/*  sss          tttttt    rr  rrrr    cccccccc   mm  mm mm    pppppppp        ((  pppppppp       qqqqqqqq  ))    */
+/*   sss         tt        rr rr      cc          mm mmmm mm   pp     pp      ((   pp     pp     qq     qq   ))   */
+/*     sss       tt        rrrr      cc           mmm  m  mm   pp     pp     ((    pp     pp     qq     qq    ))  */
+/*       sss     tt        rrr       cc           mm   m  mm   pp     pp     ((    pp     pp     qq     qq    ))  */
+/*        sss    tt        rr        cc           mm   m  mm   pp     pp     ((    pp     pp     qq     qq    ))  */
+/*        sss     tt       rr         cc          mm   m  mm   pp    pp      ((    pp    pp      qq     qq    ))  */
+/*   sssssss       ttttt   rr          cccccccc   mm   m  mm   ppppppp        ((   ppppppp   ,,   qqqqqqqq   ))   */
+/*                                                             pp              ((  pp        ,,         qq  ))    */
+/*                                                             pp                  pp       ,,          qq        */
+/*                                                             pp                  pp                   qq        */
+/*                                                             pp                  pp                   qq        */
+/*                                                             pp                  pp                   qq        */
+/*                                                             pp                  pp                   qq        */
+/*                                                                                                                */
+/******************************************************************************************************************/
 void SpecialFunctionHandler::handleMyStrcmp(
 	ExecutionState &state,
 	KInstruction *target,
 	std::vector<ref<Expr> > &arguments)
 {
+	bool result=false;
+	bool success=false;
+	
+	char AB_p_name[AB_MAX_NAME_LENGTH]={0};
+	char AB_q_name[AB_MAX_NAME_LENGTH]={0};
+
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */
 	/*****************************************/
@@ -1465,68 +1451,35 @@ void SpecialFunctionHandler::handleMyStrcmp(
 	std::string p = state.varNames[varName0];
 	std::string q = state.varNames[varName1];
 
-	/****************************************************************/
-	/* [5] Apply the relevant semantics transformer for strcpy(p,q) */
-	/****************************************************************/
+	/***********************************/
+	/* [5] Extract serials for p and q */
+	/***********************************/
 	int serial_p = state.ab_serial[p];
-	int last_p   = state.ab_last[serial_p];
-	
-	char AB_p_serial_name[128];
-	char AB_p_version_name[128];
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset( AB_p_serial_name,0,sizeof(AB_p_serial_name));
-	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
-	sprintf(AB_p_serial_name,"%s_%d","_serial_", serial_p);
-	sprintf(AB_p_version_name,"%s_%d","_version_",last_p);
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_p_nameTag="AB"+
-	std::string(AB_p_serial_name)+
-	std::string(AB_p_version_name);
-	char AB_p_name[256]; memset(AB_p_name,0,sizeof(AB_p_name));strcpy(AB_p_name,AB_p_nameTag.c_str());
-
-	/************************************************************************/
-	/************************************************************************/
-	/************************************************************************/
-	/************************ Now the same for q ... ************************/
-	/************************************************************************/
-	/************************************************************************/
-	/************************************************************************/
 	int serial_q = state.ab_serial[q];
+
+	/*****************************************/
+	/* [6] Extract last versions for p and q */
+	/*****************************************/
+	int last_p   = state.ab_last[serial_p];
 	int last_q   = state.ab_last[serial_q];
 	
-	char AB_q_serial_name[128];
-	char AB_q_version_name[128];
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset( AB_q_serial_name,0,sizeof(AB_q_serial_name));
-	memset( AB_q_version_name,0,sizeof(AB_q_version_name));
-	sprintf(AB_q_serial_name,"%s_%d","_serial_", serial_q);
-	sprintf(AB_q_version_name,"%s_%d","_version_",last_q);
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_q_nameTag="AB"+
-	std::string(AB_q_serial_name)+
-	std::string(AB_q_version_name);
-	char AB_q_name[256]; memset(AB_q_name,0,sizeof(AB_q_name));strcpy(AB_q_name,AB_q_nameTag.c_str());
+	/************************************************************************************/
+	/* [7] Assemble the abstract buffers names (with their serial numbers and versions) */
+	/************************************************************************************/
+	Assemble_Abstract_Buffer_Name(serial_p,last_p,AB_p_name);
+	Assemble_Abstract_Buffer_Name(serial_q,last_q,AB_q_name);
 
-	ref<Expr> error_refExpr;
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/
+	/******************************************************************************/
+	/* [8a] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/
 	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
 	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
 	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
 	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
 	ref<Expr> AB_p_length_refExpr  = StrLengthExpr::create(AB_p_refExpr);
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/	
+	/******************************************************************************/
+	/* [8b] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/	
 	ref<Expr> AB_p_offset_refExpr  =
 	StrSubstrExpr::create(
 		AB_p_refExpr,
@@ -1534,9 +1487,9 @@ void SpecialFunctionHandler::handleMyStrcmp(
 		SubExpr::create(
 			AB_p_length_refExpr,
 			state.ab_offset[p]));
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/	
+	/******************************************************************************/
+	/* [8c] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/	
 	ref<Expr> AB_q_offset_refExpr  =
 	StrSubstrExpr::create(
 		AB_q_refExpr,
@@ -1544,38 +1497,52 @@ void SpecialFunctionHandler::handleMyStrcmp(
 		SubExpr::create(
 			AB_q_length_refExpr,
 			state.ab_offset[q]));
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/	
+	/******************************************************************************/
+	/* [8d] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/	
 	ref<Expr> firstIdxOf_x00_in_p      = StrFirstIdxOfExpr::create(AB_p_offset_refExpr,x00_refExpr);
 	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
 	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
 	ref<Expr> p_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(1,Expr::Int32));
-	ref<Expr> Is_p_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_p,ConstantExpr::create(-1,Expr::Int32));
-	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(-1,Expr::Int32));
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/	
+	ref<Expr> Is_p_not_NULL_terminated = EqExpr::create(p_length_plus_1,ConstantExpr::create(0,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(0,Expr::Int32));
+	ref<Expr> both_p_and_q_are_not_NULL_terminated = AndExpr::create(Is_p_not_NULL_terminated,Is_q_not_NULL_terminated);
+	/******************************************************************************/
+	/* [8e] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/	
 	ref<Expr> actual_p_refExpr     =
 	StrSubstrExpr::create(
 		AB_p_offset_refExpr,
 		ConstantExpr::create(0,Expr::Int32),
 		p_length_plus_1);
-	/*************************************************************************/
-	/* Temporary ref<Expr> variables to handle the enormous final constraint */
-	/*************************************************************************/	
+	/******************************************************************************/
+	/* [8f] Temporary ref<Expr> variables to handle the enormous final constraint */
+	/******************************************************************************/	
 	ref<Expr> actual_q_refExpr     =
 	StrSubstrExpr::create(
 		AB_q_offset_refExpr,
 		ConstantExpr::create(0,Expr::Int32),
 		q_length_plus_1);
 
-	/*********************************/
-	/* Finally the actual constraint */
-	/*********************************/
-	ref<Expr> e = SelectExpr::create(
-		AndExpr::create(Is_p_not_NULL_terminated,Is_q_not_NULL_terminated),
-		error_refExpr,
+	/*****************************************************************************/
+	/* [9] Check with the solver whether BOTH p and q can be NOT NULL terminated */
+	/*****************************************************************************/
+	success = executor.solver->mayBeTrue(state,both_p_and_q_are_not_NULL_terminated,result);
+	if (result)
+	{
+		klee_error("Both %s and %s are not NULL terminated",p.c_str(),q.c_str());
+		klee_error("     ^^     ^^                        ");
+			
+		assert(0);
+	}
+		
+	/*************************************************************/
+	/* [10] Add the constraint that p and q can not be both NULL */
+	/*************************************************************/
+	state.constraints.addConstraint(both_p_and_q_are_not_NULL_terminated);
+	executor.bindLocal(
+		target, 
+		state,
 		SelectExpr::create(
 			Is_p_not_NULL_terminated,
 			ConstantExpr::create(1,Expr::Int32),
@@ -1583,13 +1550,8 @@ void SpecialFunctionHandler::handleMyStrcmp(
 				Is_q_not_NULL_terminated,
 				ConstantExpr::create(1,Expr::Int32),
 				StrEqExpr::create(actual_p_refExpr,actual_q_refExpr))));
-		
-	/*****************************/
-	/* Add the actual constraint */
-	/*****************************/
-	state.constraints.addConstraint(e);
-
 }
+
 /********************************************************/
 /*                                                      */
 /*                                                      */
@@ -1705,6 +1667,8 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 {
 	bool success;
 	bool result;
+
+	char AB_p_name[AB_MAX_NAME_LENGTH]={0};
 	
 	/*****************************************/
 	/* [1] Extract the llvm call instruction */
@@ -1732,30 +1696,23 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 	std::string p = state.varNames[varName1];
 	std::string i = state.varNames[varName2];
 
-	char AB_p_serial_name[128];
-	char AB_p_version_name[128];
+	/****************************/
+	/* [5] Extract serial for p */
+	/****************************/
 	int serial_p = state.ab_serial[p];
-	int last_p   = state.ab_last[serial_p];
-	/**************************************************************/
-	/* [5] Apply the relevant semantics transformer for c := p[i] */
-	/**************************************************************/	
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset( AB_p_serial_name,0,sizeof(AB_p_serial_name));
-	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
-	sprintf(AB_p_serial_name,"%s_%d","_serial_", serial_p);
-	sprintf(AB_p_version_name,"%s_%d","_version_",last_p);
-	
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_p_name="AB"+
-	std::string(AB_p_serial_name)+
-	std::string(AB_p_version_name);
 
+	/**********************************/
+	/* [6] Extract last version for p */
+	/**********************************/
+	int last_p = state.ab_last[serial_p];
+
+	/*******************************************************************************/
+	/* [7] Assemble the abstract buffers name (with its serial number and version) */
+	/*******************************************************************************/
+	Assemble_Abstract_Buffer_Name(serial_p,last_p,AB_p_name);
+	
 	/******************************************************************************/
-	/* [6] Add ANSI C constraint that p+i does NOT point beyond buffer boundaries */
+	/* [8] Add ANSI C constraint that p+i does NOT point beyond buffer boundaries */
 	/******************************************************************************/
 	ref<Expr> e1 = SgeExpr::create(
 		AddExpr::create(
@@ -1764,7 +1721,7 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 		state.ab_size[serial_p]);
 
 	/****************************************************************************/
-	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
+	/* [9] Check with the solver whether p+i can point beyond buffer boundaries */
 	/****************************************************************************/
 	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
@@ -1778,18 +1735,26 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 		assert(0);
 	}
 
-	/*********************************/
-	/* [8] Add the actual constraint */
-	/*********************************/
-	state.constraints.addConstraint(NotExpr::create(e1));
+	/************************/
+	/* [10] Read constraint */
+	/************************/
+	ref<Expr> e2 = StrEqExpr::create(
+		StrFromBitVector8Expr::create(arguments[2]),
+		StrCharAtExpr::create(
+			StrVarExpr::create(AB_p_name),
+			AddExpr::create(
+				arguments[1],
+				state.ab_offset[p])));
 
-	/***************************/
-	/* [9] Add read constraint */
-	/***************************/
-	//ref<Expr> e2 = SgeExpr::create(
-	//	AddExpr::create(
-	//		state.ab_offset[p],
-	//		arguments[2]),
+	/********************************/
+	/* [11] Add the read constraint */
+	/********************************/
+	state.constraints.addConstraint(e2);
+
+	/**********************************************************************/
+	/* [12] Add the constraint that p+i points inside the abstract buffer */
+	/**********************************************************************/
+	state.constraints.addConstraint(NotExpr::create(e1));
 }
 
 /**************************************************************/
@@ -1818,6 +1783,8 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 {
 	bool success;
 	bool result;
+
+	char AB_p_name[AB_MAX_NAME_LENGTH]={0};
 
 	/****************************************************/
 	/* [0] Inside handleMyWriteCharToStringAtOffset ... */
@@ -1850,30 +1817,23 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	std::string i = state.varNames[varName1];
 	std::string c = state.varNames[varName2];
 
-	char AB_p_serial_name[128];
-	char AB_p_version_name[128];
+	/****************************/
+	/* [5] Extract serial for p */
+	/****************************/
 	int serial_p = state.ab_serial[p];
-	int last_p   = state.ab_last[serial_p];
-	/**************************************************************/
-	/* [5] Apply the relevant semantics transformer for p[i] := c */
-	/**************************************************************/	
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	memset( AB_p_serial_name,0,sizeof(AB_p_serial_name));
-	memset( AB_p_version_name,0,sizeof(AB_p_version_name));
-	sprintf(AB_p_serial_name,"%s_%d","_serial_", serial_p);
-	sprintf(AB_p_version_name,"%s_%d","_version_",last_p);
-	/************************************************************************/
-	/* Assemble the abstract buffer name with its serial number and version */
-	/************************************************************************/
-	std::string AB_p_nameTag="AB"+
-	std::string(AB_p_serial_name)+
-	std::string(AB_p_version_name);
-	char AB_p_name[256]; memset(AB_p_name,0,sizeof(AB_p_name));strcpy(AB_p_name,AB_p_nameTag.c_str());
+
+	/**********************************/
+	/* [6] Extract last version for p */
+	/**********************************/
+	int last_p = state.ab_last[serial_p];
+
+	/*******************************************************************************/
+	/* [7] Assemble the abstract buffers name (with its serial number and version) */
+	/*******************************************************************************/
+	Assemble_Abstract_Buffer_Name(serial_p,last_p,AB_p_name);
 
 	/******************************************************************************/
-	/* [6] Add ANSI C constraint that p+i does NOT point beyond buffer boundaries */
+	/* [8] Add ANSI C constraint that p+i does NOT point beyond buffer boundaries */
 	/******************************************************************************/
 	ref<Expr> e1 = SgeExpr::create(
 		AddExpr::create(
@@ -1882,7 +1842,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 		state.ab_size[serial_p]);
 
 	/****************************************************************************/
-	/* [7] Check with the solver whether q+i can point beyond buffer boundaries */
+	/* [9] Check with the solver whether p+i can point beyond buffer boundaries */
 	/****************************************************************************/
 	success = executor.solver->mayBeTrue(state,e1,result);
 	if (result)
@@ -1901,9 +1861,9 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/*********************************/
 	state.constraints.addConstraint(NotExpr::create(e1));
 
-	/***************************/
-	/* [9] Add read constraint */
-	/***************************/
+	/****************************/
+	/* [9] Add write constraint */
+	/****************************/
 	ref<Expr> e2 = StrEqExpr::create(
 		StrFromBitVector8Expr::create(arguments[2]),
 		StrCharAtExpr::create(
@@ -1917,11 +1877,6 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/*********************************/
 	state.constraints.addConstraint(e2);
 }
-
-void SpecialFunctionHandler::handleMyCharAssign(
-	ExecutionState &state,
-	KInstruction *target,
-	std::vector<ref<Expr> > &arguments){}
 
 void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	ExecutionState &state,
@@ -1955,46 +1910,6 @@ void SpecialFunctionHandler::handleMy_p_assign_NULL(
 	/* [5] For debug purposes only ... */
 	/***********************************/
 	llvm::errs() << varName << "\n";
-}
-
-void SpecialFunctionHandler::handleMyIntAssign(
-	ExecutionState &state,
-	KInstruction *target,
-	std::vector<ref<Expr> > &arguments)
-{
-	/*****************************************/
-	/* [1] Extract the llvm call instruction */
-	/*****************************************/
-	llvm::CallInst *callInst = (llvm::CallInst *) target->inst;
-
-	/*********************************************/
-	/* [2] Extract the all three input arguments */
-	/*********************************************/
-	llvm::Value *value0 = callInst->getArgOperand(0);
-	llvm::Value *value1 = callInst->getArgOperand(1);
-	// llvm::Value *value2 = callInst->getArgOperand(2);
-		
-	/********************************************/
-	/* [3] Take the name of the input arguments */
-	/********************************************/
-	std::string varName0 = value0->getName().str();
-	std::string varName1 = value1->getName().str();
-	// std::string varName2 = value2->getName().str();
-
-	/****************************************************************/
-	/* [4] Apply the relevant semantics transformer:                */
-	/*     for p[i] := c, this involves only setting the following: */
-	/*     serial(p) := 0                                           */
-	/*     that is, a non existing serial                           */
-	/****************************************************************/
-	// state.oren_serials[varName] = 0;
-
-	/***********************************/
-	/* [5] For debug purposes only ... */
-	/***********************************/
-	llvm::errs() << varName0 << "\n";
-	llvm::errs() << varName1 << "\n";
-	// llvm::errs() << varName2 << "\n";
 }
 
 void SpecialFunctionHandler::handleMyMalloc(

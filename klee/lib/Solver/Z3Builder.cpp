@@ -469,47 +469,32 @@ Z3ASTHandle Z3Builder::construct(ref<Expr> e, int *width_out) {
 
 Z3_ast Z3Builder::ConvertBitVec32ToInt(Z3_ast ast)
 {
-	return Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,0)),
-		Z3_mk_int(ctx,0,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,1)),
-		Z3_mk_int(ctx,1,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,2)),
-		Z3_mk_int(ctx,2,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,3)),
-		Z3_mk_int(ctx,3,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,4)),
-		Z3_mk_int(ctx,4,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,5)),
-		Z3_mk_int(ctx,5,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			bvConst32(32,6)),
-		Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx)),
-	Z3_mk_ite(ctx,
-		Z3_mk_eq(ctx,
-			ast,
-			Z3_mk_int(ctx,7,Z3_mk_bv_sort(ctx,32))),
-		bvConst32(32,7),
-		bvConst32(32,8)))))))));
+	return
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,0)),
+			Z3ASTHandle(Z3_mk_int(ctx,0,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,1)),
+			Z3ASTHandle(Z3_mk_int(ctx,1,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,2)),
+			Z3ASTHandle(Z3_mk_int(ctx,2,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,3)),
+			Z3ASTHandle(Z3_mk_int(ctx,3,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,4)),
+			Z3ASTHandle(Z3_mk_int(ctx,4,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,5)),
+			Z3ASTHandle(Z3_mk_int(ctx,5,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,6)),
+			Z3ASTHandle(Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx)),ctx),
+		iteExpr(
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,7)),
+			Z3ASTHandle(Z3_mk_int(ctx,7,Z3_mk_int_sort(ctx)),ctx),
+			Z3ASTHandle(Z3_mk_int(ctx,8,Z3_mk_int_sort(ctx)),ctx)))))))));
 }
 
 Z3ASTHandle Z3Builder::ConvertInt2BitVec32(Z3_ast ast)
@@ -660,14 +645,14 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
   // String
   case Expr::Str_Var:
   {
- 	llvm::errs() << "*****************\n";
-  	llvm::errs() << "* Expr::Str_Var *\n";
-  	llvm::errs() << "*****************\n";
-
   	/**********************************/
   	/* Cast e to an StrVarExpr ...    */
   	/**********************************/
   	StrVarExpr *sve = (StrVarExpr *) e.get();
+
+ 	llvm::errs() << "****************************************\n";
+  	llvm::errs() << "* Expr::Str_Var( " << sve->name << " ) *\n";
+  	llvm::errs() << "****************************************\n";
 
   	/*******************************************************************/
   	/* Build a Z3ASTHandle from the name of the (string-sort) variable */
@@ -683,9 +668,9 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
 
   case Expr::Str_Const:
   {
-  	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
-  	/**********************************/
+  	/************************************/
+  	/* Cast e to an StrConstExpr ...    */
+  	/************************************/
   	StrConstExpr *sce = (StrConstExpr *) e.get();
 
  	llvm::errs() << "*****************************************\n";
@@ -702,6 +687,19 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
 		ctx);
 	return result2;
   }
+  case Expr::Str_FromBitVec8:
+  {
+ 	llvm::errs() << "*************************\n";
+  	llvm::errs() << "* Expr::Str_FromBitVec8 *\n";
+  	llvm::errs() << "*************************\n";  	
+  	
+  	int irrelevant_width=0;
+  	
+  	/*******************************/
+  	/* Cast e to an StrFromBitVec8 */
+  	/*******************************/
+  	StrCharAtExpr *scae = (StrCharAtExpr *) e.get();
+  }
   case Expr::Str_CharAt:
   {
  	llvm::errs() << "********************\n";
@@ -710,9 +708,9 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
 
   	int irrelevant_width=0;
   	
-  	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
-  	/**********************************/
+  	/*************************************/
+  	/* Cast e to an StrCharAtExpr ...    */
+  	/*************************************/
   	StrCharAtExpr *scae = (StrCharAtExpr *) e.get();
 
   	/*******************************************************************/
@@ -738,9 +736,9 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
  
    	int irrelevant_width=0;
   	
-  	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
-  	/**********************************/
+  	/*************************************/
+  	/* Cast e to an StrSubstrExpr ...    */
+  	/*************************************/
   	StrSubstrExpr *sbtre = (StrSubstrExpr *) e.get();
 
   	/*******************************************************************/
@@ -767,9 +765,9 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
  
   	int irrelevant_width=0;
   	
-  	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
-  	/**********************************/
+  	/*****************************************/
+  	/* Cast e to an StrFirstIdxOfExpr ...    */
+  	/*****************************************/
   	StrFirstIdxOfExpr *sfioe = (StrFirstIdxOfExpr *) e.get();
 
   	/*******************************************************************/
@@ -801,7 +799,7 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
   	int irrelevant_width=0;
   	
   	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
+  	/* Cast e to an StrCmpExpr ...    */
   	/**********************************/
   	StrCmpExpr *sce = (StrCmpExpr *) e.get();
 
@@ -838,9 +836,9 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
  
    	int irrelevant_width=0;
   	
-  	/**********************************/
-  	/* Cast e to an StrVarExpr ...    */
-  	/**********************************/
+  	/*************************************/
+  	/* Cast e to an StrLengthExpr ...    */
+  	/*************************************/
   	StrLengthExpr *sle = (StrLengthExpr *) e.get();
 
   	/*******************************************************************/

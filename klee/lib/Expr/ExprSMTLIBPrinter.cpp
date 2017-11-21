@@ -478,10 +478,17 @@ const char *ExprSMTLIBPrinter::getSMTLIBKeyword(const ref<Expr> &e)
     return "str.indexof";
   case Expr::Str_Substr:
     return "str.substr";
+  case Expr::Str_FromBitVec8:
+    return "seq.unit";
   case Expr::Str_Var:
     return "moishe zuchmir";
   case Expr::Str_Const:
-    return "\"ZIBI ZIBI BOOM\"";
+  {
+  	char *value = (char *) malloc(256);
+  	memset(value,0,256);
+  	strncpy(value,((StrConstExpr *) e.get())->value,256);
+    return value;
+  }
   case Expr::Str_Length:
     return "str.len";
 
