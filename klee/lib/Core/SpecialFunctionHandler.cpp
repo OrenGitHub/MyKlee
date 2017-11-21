@@ -1472,7 +1472,7 @@ void SpecialFunctionHandler::handleMyStrcmp(
 	/******************************************************************************/
 	/* [8a] Temporary ref<Expr> variables to handle the enormous final constraint */
 	/******************************************************************************/
-	ref<Expr> x00_refExpr          = StrConstExpr::create("\x00");
+	ref<Expr> x00_refExpr          = StrConstExpr::create("\\x00");
 	ref<Expr> AB_q_refExpr         = StrVarExpr::create(AB_q_name);
 	ref<Expr> AB_p_refExpr         = StrVarExpr::create(AB_p_name);
 	ref<Expr> AB_q_length_refExpr  = StrLengthExpr::create(AB_q_refExpr);
@@ -1527,7 +1527,9 @@ void SpecialFunctionHandler::handleMyStrcmp(
 	/*****************************************************************************/
 	/* [9] Check with the solver whether BOTH p and q can be NOT NULL terminated */
 	/*****************************************************************************/
-	success = executor.solver->mayBeTrue(state,both_p_and_q_are_not_NULL_terminated,result);
+	// success = executor.solver->mayBeTrue(state,both_p_and_q_are_not_NULL_terminated,result);
+	// success = executor.solver->mayBeTrue(state,Is_p_not_NULL_terminated,result);
+	success = executor.solver->mayBeTrue(state,Is_q_not_NULL_terminated,result);
 	if (result)
 	{
 		klee_error("Both %s and %s are not NULL terminated",p.c_str(),q.c_str());

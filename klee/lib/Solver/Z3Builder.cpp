@@ -492,8 +492,8 @@ Z3_ast Z3Builder::ConvertBitVec32ToInt(Z3_ast ast)
 			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,6)),
 			Z3ASTHandle(Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx)),ctx),
 		iteExpr(
-			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,7)),
-			Z3ASTHandle(Z3_mk_int(ctx,7,Z3_mk_int_sort(ctx)),ctx),
+			eqExpr(Z3ASTHandle(ast,ctx),bvConst32(32,-1)),
+			Z3ASTHandle(Z3_mk_int(ctx,-1,Z3_mk_int_sort(ctx)),ctx),
 			Z3ASTHandle(Z3_mk_int(ctx,8,Z3_mk_int_sort(ctx)),ctx)))))))));
 }
 
@@ -522,8 +522,8 @@ Z3ASTHandle Z3Builder::ConvertInt2BitVec32(Z3_ast ast)
 			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,6,Z3_mk_int_sort(ctx)),ctx)),
 			bvConst32(32,6),
 		iteExpr(
-			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,7,Z3_mk_int_sort(ctx)),ctx)),
-			bvConst32(32,7),
+			eqExpr(Z3ASTHandle(ast,ctx),Z3ASTHandle(Z3_mk_int(ctx,-1,Z3_mk_int_sort(ctx)),ctx)),
+			bvConst32(32,-1),
 			bvConst32(32,8)))))))));
 }
 
