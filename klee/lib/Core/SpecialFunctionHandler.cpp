@@ -1234,6 +1234,37 @@ void SpecialFunctionHandler::handleMyStrcpy(
 		AB_q_offset_refExpr,
 		ConstantExpr::create(0,Expr::Int32),
 		q_length_plus_1);
+	
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	ref<Expr> myVar = StrVarExpr::create("MOISHE_VAR");
+	ref<Expr> RUNNING_EXAMPLE =
+	AndExpr::create(
+		EqExpr::create(
+			StrFirstIdxOfExpr::create(
+				StrVarExpr::create(AB_q_name),
+				StrConstExpr::create("D")),
+			ConstantExpr::create(3,Expr::Int32)),
+		EqExpr::create(
+			StrFirstIdxOfExpr::create(
+				StrVarExpr::create(AB_q_name),
+				StrConstExpr::create("D")),
+			ConstantExpr::create(3,Expr::Int32)));
+		
+	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
+	if (result)
+	{
+		klee_error("RUNNING_EXAMPLE WORKS !!!");
+		assert(0);
+	}
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
 
 	/**************************************************************/
 	/* Check with the solver whether q can be NOT NULL terminated */
@@ -1383,16 +1414,18 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	memset(actualCStringContent_C_String_Format,0,sizeof(actualCStringContent_C_String_Format));
 	strcpy(actualCStringContent_C_String_Format,actualCStringContent.c_str());
 	int n = strlen(actualCStringContent_C_String_Format);
-	actualCStringContent_C_String_Format[n+0] = '\\';
-	actualCStringContent_C_String_Format[n+1] = 'x';
-	actualCStringContent_C_String_Format[n+2] = '0';
-	actualCStringContent_C_String_Format[n+3] = '0';
-	actualCStringContent_C_String_Format[n+4] =  0 ;
+	actualCStringContent_C_String_Format[n+0] = 'M';
+	actualCStringContent_C_String_Format[n+1] =  0 ;
+	//actualCStringContent_C_String_Format[n+0] = '\\';
+	//actualCStringContent_C_String_Format[n+1] = 'x';
+	//actualCStringContent_C_String_Format[n+2] = '0';
+	//actualCStringContent_C_String_Format[n+3] = '0';
+	//actualCStringContent_C_String_Format[n+4] =  0 ;
 	
 	/***************************/
 	/* Add relevant constraint */
 	/***************************/
-	ref<Expr> e = StrEqExpr::create(
+	ref<Expr> e = EqExpr::create(
 		StrVarExpr::create(name),
 		StrConstExpr::create(actualCStringContent_C_String_Format));
 		
@@ -1818,6 +1851,44 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	std::string p = state.varNames[varName0];
 	std::string i = state.varNames[varName1];
 	std::string c = state.varNames[varName2];
+
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	ref<Expr> myVar = StrVarExpr::create("MOISHE_VAR");
+	ref<Expr> mishmishVar = StrVarExpr::create("MISHMISH");
+	ref<Expr> MISHMISH_eq_DKPPs22 =
+	StrEqExpr::create(
+		StrConstExpr::create("DKPPs22"),
+		mishmishVar);
+
+	ref<Expr> MISHMISH_indexof_P_is_4 =
+	EqExpr::create(
+		StrFirstIdxOfExpr::create(
+			mishmishVar,
+			StrConstExpr::create("P")),
+		ConstantExpr::create(4,Expr::Int32));
+
+	llvm::errs() << "DUBI DUBI DUBI" << "\n";
+
+	ref<Expr> RUNNING_EXAMPLE =
+	AndExpr::create(
+		MISHMISH_eq_DKPPs22,
+		MISHMISH_indexof_P_is_4);
+		
+	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
+	if (result)
+	{
+		klee_error("RUNNING_EXAMPLE WORKS !!!");
+		assert(0);
+	}
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
 
 	/****************************/
 	/* [5] Extract serial for p */

@@ -152,13 +152,43 @@ void Expr::printKind(llvm::raw_ostream &os, Kind k) {
     X(Sgt);
     X(Sge);
     // String actions from here ...
-    X(Str_CharAt);
-    X(Str_Compare);
-    X(Str_Const);
-    X(Str_FirstIdxOf);
-    X(Str_Length);
+    case (Str_CharAt):
+    {
+    	os << "str.at";
+    	break;
+    }
+    case (Str_Eq):
+    {
+    	os << "=";
+    	break;
+    }
+    case (Str_Compare):
+    {
+    	os << "=";
+    	break;
+    }
+    case (Str_Const):
+    {
+    	os << "SOME-CONST-STRING";
+    	break;
+    }
+    case (Str_FirstIdxOf):
+    {
+    	os << "str.indexof";
+    	break;
+    }
+    case (Str_Length):
+    {
+    	os << "str.len";
+    	break;
+    }
+    
     X(Str_Substr);
-    X(Str_Var);
+    case (Str_Var):
+    {
+    	os << "BEST STRING VAR EVER !!!\n";
+    	break;	
+    }
 #undef X
   default:
     assert(0 && "invalid kind");

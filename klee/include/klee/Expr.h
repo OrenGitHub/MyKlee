@@ -871,21 +871,33 @@ public:
 	static bool classof(const ConstantExpr *) { return false; }	
 };
 
-/*************/
-/* StrEqExpr */
-/*************/
+/*********************/
+/* StrFirstIdxOfExpr */
+/*********************/
 class StrFirstIdxOfExpr : public Expr {
 public:
 	ref<Expr> haystack;
 	ref<Expr> needle;
 
+	StrFirstIdxOfExpr(
+		const ref<Expr> &in_haystack,
+		const ref<Expr> &in_needle)
+		:
+		haystack(in_haystack),
+		needle(in_needle)
+	{}
+
 public:
-	static ref<Expr> create(ref<Expr> haystack,ref<Expr> needle)
+	static ref<Expr> create(const ref<Expr> &in_haystack,const ref<Expr> &in_needle)
 	{
-		StrFirstIdxOfExpr *e = new StrFirstIdxOfExpr;
-		e->haystack = haystack;
-		e->needle = needle;
-		return e;
+		return StrFirstIdxOfExpr::alloc(in_haystack,in_needle);
+	}
+	
+	static ref<Expr> alloc(const ref<Expr> &in_haystack,const ref<Expr> &in_needle)
+	{
+		ref<Expr> res(new StrFirstIdxOfExpr(in_haystack,in_needle));
+		res->computeHash();
+		return res;
 	}
 
 public:
@@ -916,13 +928,19 @@ public:
 	ref<Expr> s1;
 	ref<Expr> s2;
 
+	StrEqExpr(const ref<Expr> &in_s1,const ref<Expr> &in_s2) : s1(in_s1),s2(in_s2) {}
+
 public:
-	static ref<Expr> create(ref<Expr> s1,ref<Expr> s2)
+	static ref<Expr> create(const ref<Expr> &in_s1,const ref<Expr> &in_s2)
 	{
-		StrEqExpr *e = new StrEqExpr;
-		e->s1 = s1;
-		e->s2 = s2;
-		return e;
+		return StrEqExpr::alloc(in_s1,in_s2);
+	}
+	
+	static ref<Expr> alloc(const ref<Expr> &in_s1,const ref<Expr> &in_s2)
+	{
+		ref<Expr> res(new StrEqExpr(in_s1,in_s2));
+		res->computeHash();
+		return res;
 	}
 
 public:
@@ -933,8 +951,8 @@ public:
 	/* original klee design                                                  */
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Eq;}	
-	virtual Width     getWidth()                const {return   32;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual Width     getWidth()                const {return   1;}	
+	virtual unsigned  getNumKids()              const {return   2;}	
 	virtual ref<Expr> getKid(unsigned int i)    const	{
 															if(i==0){return s1;}
 															if(i==1){return s2;}
@@ -1064,14 +1082,14 @@ public:
 
 class StrVarExpr : public Expr {
 public:
-	char name[256];
+	char name[512];
 
 public:
-	static ref<Expr> create(char name[256])
+	static ref<Expr> create(char name[512])
 	{
 		StrVarExpr *e = new StrVarExpr;
-		memset(e->name,0,sizeof(e->name));
-		strcpy(e->name,name);
+		memset(e->name,0,512);
+		strncpy(e->name,name,512);
 		return e;
 	}
 
@@ -1152,7 +1170,7 @@ public:
 	/*************************************************************************/	
 	virtual Kind      getKind()                 const {return   Expr::Str_Compare;}	
 	virtual Width     getWidth()                const {return   32;}	
-	virtual unsigned  getNumKids()              const {return   0;}	
+	virtual unsigned  getNumKids()              const {return   2;}	
 	virtual ref<Expr> getKid(unsigned int)      const {ref<Expr> moish; return moish;}
 	virtual ref<Expr> rebuild(ref<Expr> kids[]) const {ref<Expr> moish; return moish;}
 	static bool classof(const Expr *E) { return E->getKind() == Expr::Str_Compare; }

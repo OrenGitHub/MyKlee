@@ -481,7 +481,12 @@ const char *ExprSMTLIBPrinter::getSMTLIBKeyword(const ref<Expr> &e)
   case Expr::Str_FromBitVec8:
     return "seq.unit";
   case Expr::Str_Var:
-    return "moishe zuchmir";
+  {
+  	char *name = (char *) malloc(512);
+  	memset(name,0,512);
+  	strncpy(name,((StrVarExpr *) e.get())->name,256);
+    return name;
+  }
   case Expr::Str_Const:
   {
   	char *value = (char *) malloc(256);

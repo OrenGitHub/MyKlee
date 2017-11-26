@@ -643,6 +643,32 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
   }
 
   // String
+  case Expr::Str_Eq:
+  {
+  	int irrelevant_width=0;
+
+  	/*********************************/
+  	/* Cast e to an StrEqExpr ...    */
+  	/*********************************/
+  	StrEqExpr *see = (StrEqExpr *) e.get();
+
+ 	llvm::errs() << "***************************\n";
+  	llvm::errs() << "* Expr::Str_Eq(...,...)\n *";
+  	llvm::errs() << "***************************\n";
+
+  	/******************************************/
+  	/* Build a Z3ASTHandle from the Z3 eq AST */
+  	/******************************************/
+	Z3ASTHandle result2 = Z3ASTHandle(
+		Z3_mk_eq(
+			ctx,
+			constructActual(see->s1,&irrelevant_width),
+			constructActual(see->s2,&irrelevant_width)),
+		ctx);
+				
+	return result2;
+  }
+
   case Expr::Str_Var:
   {
   	/**********************************/
@@ -663,6 +689,7 @@ Z3ASTHandle Z3Builder::constructActual(ref<Expr> e, int *width_out) {
 			Z3_mk_string_symbol(ctx, sve->name),
 			Z3SortHandle(Z3_mk_string_sort(ctx), ctx)),
 		ctx);
+				
 	return result2;
   }
 
