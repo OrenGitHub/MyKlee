@@ -1213,9 +1213,11 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
-	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
+	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_refExpr,x00_refExpr);
+	//ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
 	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
-	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(0,Expr::Int32));
+	// ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(4,Expr::Int32));
+	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(4,Expr::Int32));
 
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
@@ -1235,22 +1237,23 @@ void SpecialFunctionHandler::handleMyStrcpy(
 		ConstantExpr::create(0,Expr::Int32),
 		q_length_plus_1);
 	
+#	if 0	
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
-	ref<Expr> myVar = StrVarExpr::create("MOISHE_VAR");
+	ref<Expr> myVar = StrVarExpr::create(AB_q_name);
 	ref<Expr> RUNNING_EXAMPLE =
 	AndExpr::create(
 		EqExpr::create(
 			StrFirstIdxOfExpr::create(
-				StrVarExpr::create(AB_q_name),
-				StrConstExpr::create("D")),
+				myVar,
+				StrConstExpr::create("\\x00")),
 			ConstantExpr::create(3,Expr::Int32)),
 		EqExpr::create(
 			StrFirstIdxOfExpr::create(
-				StrVarExpr::create(AB_q_name),
+				myVar,
 				StrConstExpr::create("D")),
 			ConstantExpr::create(3,Expr::Int32)));
 		
@@ -1265,6 +1268,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
+#	endif
 
 	/**************************************************************/
 	/* Check with the solver whether q can be NOT NULL terminated */
@@ -1414,13 +1418,11 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	memset(actualCStringContent_C_String_Format,0,sizeof(actualCStringContent_C_String_Format));
 	strcpy(actualCStringContent_C_String_Format,actualCStringContent.c_str());
 	int n = strlen(actualCStringContent_C_String_Format);
-	actualCStringContent_C_String_Format[n+0] = 'M';
-	actualCStringContent_C_String_Format[n+1] =  0 ;
-	//actualCStringContent_C_String_Format[n+0] = '\\';
-	//actualCStringContent_C_String_Format[n+1] = 'x';
-	//actualCStringContent_C_String_Format[n+2] = '0';
-	//actualCStringContent_C_String_Format[n+3] = '0';
-	//actualCStringContent_C_String_Format[n+4] =  0 ;
+	actualCStringContent_C_String_Format[n+0] = '\\';
+	actualCStringContent_C_String_Format[n+1] = 'x';
+	actualCStringContent_C_String_Format[n+2] = '0';
+	actualCStringContent_C_String_Format[n+3] = '0';
+	actualCStringContent_C_String_Format[n+4] =  0 ;
 	
 	/***************************/
 	/* Add relevant constraint */
@@ -1852,6 +1854,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	std::string i = state.varNames[varName1];
 	std::string c = state.varNames[varName2];
 
+#	if 0
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
@@ -1871,7 +1874,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 			StrConstExpr::create("P")),
 		ConstantExpr::create(4,Expr::Int32));
 
-	llvm::errs() << "DUBI DUBI DUBI" << "\n";
+	llvm::errs() << "DUBI DUBI" << "\n";
 
 	ref<Expr> RUNNING_EXAMPLE =
 	AndExpr::create(
@@ -1881,7 +1884,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
 	if (result)
 	{
-		klee_error("RUNNING_EXAMPLE WORKS !!!");
+		klee_error("DUBI RUNNING_EXAMPLE WORKS !!!");
 		assert(0);
 	}
 	/**************************************************************/
@@ -1889,6 +1892,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/**************************************************************/
 	/**************************************************************/
 	/**************************************************************/
+#	endif
 
 	/****************************/
 	/* [5] Extract serial for p */
