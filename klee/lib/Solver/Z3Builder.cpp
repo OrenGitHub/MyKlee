@@ -467,7 +467,7 @@ Z3ASTHandle Z3Builder::construct(ref<Expr> e, int *width_out) {
   }
 }
 
-Z3_ast Z3Builder::ConvertBitVec32ToInt(Z3_ast ast)
+Z3ASTHandle Z3Builder::ConvertBitVec32ToInt(Z3_ast ast)
 {
 	return
 		iteExpr(

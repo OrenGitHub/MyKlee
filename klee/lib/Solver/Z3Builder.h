@@ -131,7 +131,7 @@ class Z3Builder {
   Z3ArrayExprHash _arr_hash;
 public:
 	Z3ASTHandle ConvertInt2BitVec32(Z3_ast ast);
-	Z3_ast ConvertBitVec32ToInt(Z3_ast ast);
+	Z3ASTHandle ConvertBitVec32ToInt(Z3_ast ast);
 private:
   Z3ASTHandle bvOne(unsigned width);
   Z3ASTHandle bvZero(unsigned width);

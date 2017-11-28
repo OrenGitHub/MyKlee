@@ -972,14 +972,36 @@ public:
 	ref<Expr> offset;
 	ref<Expr> length;
 
+	StrSubstrExpr(
+		const ref<Expr> &in_s,
+		const ref<Expr> &in_offset,
+		const ref<Expr> &in_length)
+		:
+		s(in_s),
+		offset(in_offset),
+		length(in_length)
+	{}
+
 public:
-	static ref<Expr> create(ref<Expr> s,ref<Expr> offset,ref<Expr> length)
+	static ref<Expr> create(
+		const ref<Expr> &in_s,
+		const ref<Expr> &in_offset,
+		const ref<Expr> &in_length)
 	{
-		StrSubstrExpr *e = new StrSubstrExpr;
-		e->s = s;
-		e->offset = offset;
-		e->length = length;
-		return e;
+		return StrSubstrExpr::alloc(
+			in_s,
+			in_offset,
+			in_length);
+	}
+	
+	static ref<Expr> alloc(
+		const ref<Expr> &in_s,
+		const ref<Expr> &in_offset,
+		const ref<Expr> &in_length)
+	{
+		ref<Expr> res(new StrSubstrExpr(in_s,in_offset,in_length));
+		res->computeHash();
+		return res;
 	}
 
 public:

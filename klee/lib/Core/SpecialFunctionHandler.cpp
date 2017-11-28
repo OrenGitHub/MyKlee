@@ -1202,19 +1202,60 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
+	//ref<Expr> AB_q_offset_refExpr  =
+	//StrSubstrExpr::create(
+	//	AB_q_refExpr,
+	//	state.ab_offset[q],
+	//	SubExpr::create(
+	//		AB_q_length_refExpr,
+	//		state.ab_offset[q]));
+
+	llvm::errs() << "ZIGI ZIGI ZIGI" << "\n";
+
 	ref<Expr> AB_q_offset_refExpr  =
 	StrSubstrExpr::create(
-		AB_q_refExpr,
-		state.ab_offset[q],
-		SubExpr::create(
-			AB_q_length_refExpr,
-			state.ab_offset[q]));
+		StrVarExpr::create(AB_q_name),
+		ConstantExpr::create(0,Expr::Int32),
+		ConstantExpr::create(4,Expr::Int32));
+
+	llvm::errs() << "ZIGI ZIGI ZIGI" << "\n";
+
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	ref<Expr> RUNNING_EXAMPLE =
+	AndExpr::create(
+		EqExpr::create(
+			StrFirstIdxOfExpr::create(
+				AB_q_offset_refExpr,
+				StrConstExpr::create("8")),
+			ConstantExpr::create(2,Expr::Int32)),
+		EqExpr::create(
+			StrFirstIdxOfExpr::create(
+				AB_q_offset_refExpr,
+				StrConstExpr::create("T")),
+			ConstantExpr::create(0,Expr::Int32)));
+		
+	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
+	if (result)
+	{
+		klee_error("ZIGI ZIGI ZIGI RUNNING_EXAMPLE WORKS !!!");
+		assert(0);
+	}
+
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
 			
 	/*************************************************************************/
 	/* Temporary ref<Expr> variables to handle the enormous final constraint */
 	/*************************************************************************/	
-	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_refExpr,x00_refExpr);
-	//ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
+	//ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_refExpr,x00_refExpr);
+	ref<Expr> firstIdxOf_x00_in_q      = StrFirstIdxOfExpr::create(AB_q_offset_refExpr,x00_refExpr);
 	ref<Expr> q_length_plus_1          = AddExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(1,Expr::Int32));
 	// ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(q_length_plus_1,ConstantExpr::create(4,Expr::Int32));
 	ref<Expr> Is_q_not_NULL_terminated = EqExpr::create(firstIdxOf_x00_in_q,ConstantExpr::create(4,Expr::Int32));
