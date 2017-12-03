@@ -1210,40 +1210,46 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	//		AB_q_length_refExpr,
 	//		state.ab_offset[q]));
 
-	llvm::errs() << "ZIGI ZIGI ZIGI" << "\n";
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	/**************************************************************/
+	ref<Expr> myVar = StrVarExpr::create(AB_q_name);
+	ref<Expr> AB_q_name_eq_TT8G = 
+		StrEqExpr::create(
+			myVar,
+			StrConstExpr::create("TT8G"));
+
+	// state.addConstraint(AB_q_name_eq_TT8G);
+	state.addConstraint(AB_q_name_eq_TT8G);
+
+	ref<Expr> RUNNING_EXAMPLE =
+	//AndExpr::create(AB_q_name_eq_TT8G,
+		AndExpr::create(
+			EqExpr::create(
+				StrFirstIdxOfExpr::create(
+					myVar,
+					StrConstExpr::create("8")),
+				ConstantExpr::create(2,Expr::Int32)),
+			EqExpr::create(
+				StrFirstIdxOfExpr::create(
+					myVar,
+					StrConstExpr::create("T")),
+				ConstantExpr::create(3,Expr::Int32)))/*)*/;
+		
+	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
+	if (result)
+	{
+		klee_error("SHOULD NOT PRINT THIS !!!");
+		assert(0);
+	}
 
 	ref<Expr> AB_q_offset_refExpr  =
 	StrSubstrExpr::create(
 		StrVarExpr::create(AB_q_name),
 		ConstantExpr::create(0,Expr::Int32),
 		ConstantExpr::create(4,Expr::Int32));
-
-	llvm::errs() << "ZIGI ZIGI ZIGI" << "\n";
-
-	/**************************************************************/
-	/**************************************************************/
-	/**************************************************************/
-	/**************************************************************/
-	/**************************************************************/
-	ref<Expr> RUNNING_EXAMPLE =
-	AndExpr::create(
-		EqExpr::create(
-			StrFirstIdxOfExpr::create(
-				AB_q_offset_refExpr,
-				StrConstExpr::create("8")),
-			ConstantExpr::create(2,Expr::Int32)),
-		EqExpr::create(
-			StrFirstIdxOfExpr::create(
-				AB_q_offset_refExpr,
-				StrConstExpr::create("T")),
-			ConstantExpr::create(0,Expr::Int32)));
-		
-	success = executor.solver->mayBeTrue(state,RUNNING_EXAMPLE,result);
-	if (result)
-	{
-		klee_error("ZIGI ZIGI ZIGI RUNNING_EXAMPLE WORKS !!!");
-		assert(0);
-	}
 
 	/**************************************************************/
 	/**************************************************************/
@@ -1347,7 +1353,7 @@ void SpecialFunctionHandler::handleMyStrcpy(
 	/*****************************/
 	/* Add the actual constraint */
 	/*****************************/
-	state.constraints.addConstraint(e);
+	state.addConstraint(e);
 }
 
 void SpecialFunctionHandler::handleMyConstStringAssign(
@@ -1468,11 +1474,11 @@ void SpecialFunctionHandler::handleMyConstStringAssign(
 	/***************************/
 	/* Add relevant constraint */
 	/***************************/
-	ref<Expr> e = EqExpr::create(
+	ref<Expr> e = StrEqExpr::create(
 		StrVarExpr::create(name),
 		StrConstExpr::create(actualCStringContent_C_String_Format));
 		
-	state.constraints.addConstraint(e);
+	state.addConstraint(e);
 }
 /******************************************************************************************************************/
 /*                                                                                                                */
@@ -1617,7 +1623,7 @@ void SpecialFunctionHandler::handleMyStrcmp(
 	/*************************************************************/
 	/* [10] Add the constraint that p and q can not be both NULL */
 	/*************************************************************/
-	state.constraints.addConstraint(both_p_and_q_are_not_NULL_terminated);
+	state.addConstraint(both_p_and_q_are_not_NULL_terminated);
 	executor.bindLocal(
 		target, 
 		state,
@@ -1710,7 +1716,7 @@ void SpecialFunctionHandler::handleMyStringAssignWithOffset(
 	/*********************************/
 	/* [7] Add the actual constraint */
 	/*********************************/
-	state.constraints.addConstraint(NotExpr::create(e));
+	state.addConstraint(NotExpr::create(e));
 
 	/*********************************************************/
 	/* [8] Update the state's data structure with p := q + i */
@@ -1827,12 +1833,12 @@ void SpecialFunctionHandler::handleMyReadCharFromStringAtOffset(
 	/********************************/
 	/* [11] Add the read constraint */
 	/********************************/
-	state.constraints.addConstraint(e2);
+	state.addConstraint(e2);
 
 	/**********************************************************************/
 	/* [12] Add the constraint that p+i points inside the abstract buffer */
 	/**********************************************************************/
-	state.constraints.addConstraint(NotExpr::create(e1));
+	state.addConstraint(NotExpr::create(e1));
 }
 
 /**************************************************************/
@@ -1977,7 +1983,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/*********************************/
 	/* [8] Add the actual constraint */
 	/*********************************/
-	state.constraints.addConstraint(NotExpr::create(e1));
+	state.addConstraint(NotExpr::create(e1));
 
 	/****************************/
 	/* [9] Add write constraint */
@@ -1993,7 +1999,7 @@ void SpecialFunctionHandler::handleMyWriteCharToStringAtOffset(
 	/*********************************/
 	/* [10] Add the read constraint */
 	/*********************************/
-	state.constraints.addConstraint(e2);
+	state.addConstraint(e2);
 }
 
 void SpecialFunctionHandler::handleMy_p_assign_NULL(

@@ -169,7 +169,7 @@ void Expr::printKind(llvm::raw_ostream &os, Kind k) {
     }
     case (Str_Const):
     {
-    	os << "SOME-CONST-STRING";
+    	os << "CONST-STRING";
     	break;
     }
     case (Str_FirstIdxOf):
@@ -186,7 +186,7 @@ void Expr::printKind(llvm::raw_ostream &os, Kind k) {
     X(Str_Substr);
     case (Str_Var):
     {
-    	os << "BEST STRING VAR EVER !!!\n";
+    	os << "STRING-VAR\n";
     	break;	
     }
 #undef X

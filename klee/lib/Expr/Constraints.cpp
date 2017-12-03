@@ -100,7 +100,20 @@ void ConstraintManager::simplifyForValidConstraint(ref<Expr> e) {
   // XXX 
 }
 
-ref<Expr> ConstraintManager::simplifyExpr(ref<Expr> e) const {
+ref<Expr> ConstraintManager::simplifyExpr(ref<Expr> e) const
+{
+  if (e.get()->getKind() == Expr::Str_Eq)          return e;
+  if (e.get()->getKind() == Expr::Str_Var)         return e;
+  if (e.get()->getKind() == Expr::Str_Atoi)        return e;
+  if (e.get()->getKind() == Expr::Str_Itoa)        return e;
+  if (e.get()->getKind() == Expr::Str_Const)       return e;
+  if (e.get()->getKind() == Expr::Str_CharAt)      return e;
+  if (e.get()->getKind() == Expr::Str_Substr)      return e;
+  if (e.get()->getKind() == Expr::Str_Length)      return e;
+  if (e.get()->getKind() == Expr::Str_Compare)     return e;
+  if (e.get()->getKind() == Expr::Str_FirstIdxOf)  return e;
+  if (e.get()->getKind() == Expr::Str_FromBitVec8) return e;
+
   if (isa<ConstantExpr>(e))
     return e;
 
